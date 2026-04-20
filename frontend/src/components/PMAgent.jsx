@@ -2,9 +2,12 @@ import { useState, useEffect, useRef } from 'react';
 import { dbSelect, dbInsert, isAuthenticated } from '../lib/db';
 import { useAuth } from '../contexts/AuthContext';
 
-const GEMINI_API_KEY = 'AIzaSyCK0a7Ke0f8oXtqjb61UdCZCipCQ_jKaIE';
-const GEMINI_MODEL = 'gemini-2.5-flash-preview-05-20';
-const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
+// Gemini API key — configurable via env var o hardcoded
+const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || '';
+const GEMINI_MODEL = 'gemini-2.0-flash';
+const GEMINI_URL = GEMINI_API_KEY
+  ? `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`
+  : null;
 
 function buildProjectContext(tasks, milestones) {
   const today = new Date().toISOString().split('T')[0];
@@ -83,6 +86,7 @@ REGLAS ABSOLUTAS:
 6. Formato markdown: **negritas**, listas con -, headers con ##`;
 
 async function callGemini(context, userMessage) {
+  if (!GEMINI_URL) throw new Error('API key de Gemini no configurada. Agrega VITE_GEMINI_API_KEY en las variables de entorno.');
   const response = await fetch(GEMINI_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
