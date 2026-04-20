@@ -1437,21 +1437,29 @@ export default function App() {
   var [owners, setOwners] = useState(INITIAL_OWNERS);
   var [showSettings, setShowSettings] = useState(false);
   var [showHistory, setShowHistory] = useState(false);
-  var [recentNotes, setRecentNotes] = useState([]);
-
-  // Cargar notas recientes (ultimas 24h) para badge de notificacion
-  var [notesError, setNotesError] = useState('');
+  var [allNotes, setAllNotes] = useState([]);
+  var [unreadCount, setUnreadCount] = useState(0);
   var [showNotesList, setShowNotesList] = useState(false);
+  var [showAllNotes, setShowAllNotes] = useState(false);
+
+  // Cargar notas para dropdown y badge
   useEffect(function() {
-    if (!isAuthenticated()) { setNotesError('no-auth'); return; }
-    var since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-    dbSelect('task_notes', 'select=id,task_id,user_name,content,created_at&order=created_at.desc&limit=20')
+    if (!isAuthenticated()) return;
+    dbSelect('task_notes', 'select=id,task_id,user_name,content,created_at&order=created_at.desc&limit=50')
       .then(function(notes) {
-        setRecentNotes(notes || []);
-        setNotesError('');
+        setAllNotes(notes || []);
+        // Contar no leidas: las de las ultimas 24h que no se han visto
+        var lastSeen = localStorage.getItem('dmstk-notes-last-seen') || '2000-01-01';
+        var unread = (notes || []).filter(function(n) { return n.created_at > lastSeen; }).length;
+        setUnreadCount(unread);
       })
-      .catch(function(err) { setNotesError(err.message); });
+      .catch(function() {});
   }, [tasks]);
+
+  function markNotesAsRead() {
+    localStorage.setItem('dmstk-notes-last-seen', new Date().toISOString());
+    setUnreadCount(0);
+  }
   var [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   var [isSaving, setIsSaving] = useState(false);
   var [lastSaved, setLastSaved] = useState(null);
@@ -1992,6 +2000,47 @@ export default function App() {
       {modal ? <TaskModal task={modal} owners={owners} addOwner={handleAddOwner} tasks={activeTasks} onSave={canEdit ? function(t) { if (t.id) updateTask(t.id, t); else addTask(t); setModal(null); } : null} onClose={function() { setModal(null); }} onDelete={canEdit ? function(id) { deleteTask(id); } : null} readOnly={!canEdit} /> : null}
       {showSettings ? <SettingsPanel owners={owners} addOwner={handleAddOwner} mergeOwners={handleMergeOwners} onClose={function() { setShowSettings(false); }} isAdmin={isAdmin} /> : null}
 
+      {/* Historial completo de notas */}
+      {showAllNotes && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 500, background: "rgba(44,41,38,0.5)", display: "flex", justifyContent: "center", paddingTop: 40 }} onClick={function() { setShowAllNotes(false); }}>
+          <div onClick={function(e) { e.stopPropagation(); }} style={{ background: PALETTE.bone, borderRadius: 16, border: "1px solid " + PALETTE.faint, width: "100%", maxWidth: 560, maxHeight: "85vh", display: "flex", flexDirection: "column", boxShadow: "0 24px 80px rgba(0,0,0,0.15)" }}>
+            <div style={{ padding: "16px 24px", borderBottom: "1px solid " + PALETTE.faint, display: "flex", justifyContent: "space-between", alignItems: "center", background: PALETTE.warm, flexShrink: 0, borderRadius: "16px 16px 0 0" }}>
+              <h3 style={{ fontFamily: SERIF, fontSize: 18, fontWeight: 400, margin: 0 }}>Historial de notas</h3>
+              <button onClick={function() { setShowAllNotes(false); }} style={{ border: "none", background: "transparent", cursor: "pointer", color: PALETTE.muted }}><X size={18} /></button>
+            </div>
+            <div style={{ flex: 1, overflowY: "auto", padding: "16px 24px" }}>
+              {allNotes.map(function(note) {
+                var t = tasks.find(function(tk) { return tk.id === note.task_id; });
+                var colors = [PALETTE.lagune, PALETTE.nectarine, PALETTE.mostaza, '#8b5cf6', '#10b981'];
+                var hash = (note.user_name || '').split('').reduce(function(a, c) { return a + c.charCodeAt(0); }, 0);
+                var color = colors[hash % colors.length];
+                return (
+                  <div key={note.id} style={{ display: "flex", gap: 12, marginBottom: 16, paddingBottom: 16, borderBottom: "1px solid " + PALETTE.faint + "30" }}>
+                    <div style={{ width: 32, height: 32, borderRadius: "50%", flexShrink: 0, background: color + "20", color: color, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700 }}>
+                      {(note.user_name || '?')[0].toUpperCase()}
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+                        <span style={{ fontSize: 12, fontWeight: 600, color: color }}>{note.user_name}</span>
+                        <span style={{ fontSize: 10, color: PALETTE.muted }}>{new Date(note.created_at).toLocaleString("es-ES", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}</span>
+                      </div>
+                      <div style={{ fontSize: 13, color: PALETTE.ink, lineHeight: 1.5, marginBottom: 4 }}>{note.content}</div>
+                      {t && (
+                        <div onClick={function() { setModal(t); setShowAllNotes(false); }}
+                          style={{ fontSize: 11, color: PALETTE.lagune, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 3 }}>
+                          <Link2 size={10} /> {t.name}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+              {allNotes.length === 0 && <div style={{ textAlign: "center", padding: 40, color: PALETTE.muted }}>Sin notas registradas</div>}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Panel de historial */}
       {showHistory ? (
         <div style={{ position: "fixed", inset: 0, zIndex: 500, background: "rgba(44,41,38,0.5)", display: "flex", justifyContent: "center", alignItems: "center" }} onClick={function() { setShowHistory(false); }}>
@@ -2077,22 +2126,22 @@ export default function App() {
         <div style={{ display: "flex", gap: 6 }}>
           {/* Notificaciones de notas */}
               <div style={{ position: "relative" }}>
-                <button onClick={function() { if (!showNotesList) { setShowNotesList(true); setRecentNotes([]); } else { setShowNotesList(false); } }}
-                  style={{ display: "flex", alignItems: "center", padding: 7, borderRadius: 6, border: "0.5px solid " + (recentNotes.length > 0 ? PALETTE.lagune + "40" : PALETTE.faint), background: recentNotes.length > 0 ? PALETTE.lagune + "08" : "transparent", cursor: "pointer", color: recentNotes.length > 0 ? PALETTE.lagune : PALETTE.muted }}
-                  title={recentNotes.length + " notas recientes"}>
+                <button onClick={function() { setShowNotesList(!showNotesList); if (!showNotesList) markNotesAsRead(); }}
+                  style={{ display: "flex", alignItems: "center", padding: 7, borderRadius: 6, border: "0.5px solid " + (unreadCount > 0 ? PALETTE.lagune + "40" : PALETTE.faint), background: unreadCount > 0 ? PALETTE.lagune + "08" : "transparent", cursor: "pointer", color: unreadCount > 0 ? PALETTE.lagune : PALETTE.muted }}
+                  title={unreadCount > 0 ? unreadCount + " notas sin leer" : "Notas del equipo"}>
                   <MessageCircle size={14} />
                 </button>
-                {recentNotes.length > 0 && <span style={{ position: "absolute", top: -4, right: -4, background: PALETTE.nectarine, color: "#fff", fontSize: 9, fontWeight: 700, minWidth: 16, height: 16, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 3px", pointerEvents: "none" }}>{recentNotes.length}</span>}
+                {unreadCount > 0 && <span style={{ position: "absolute", top: -4, right: -4, background: PALETTE.nectarine, color: "#fff", fontSize: 9, fontWeight: 700, minWidth: 16, height: 16, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 3px", pointerEvents: "none" }}>{unreadCount}</span>}
 
                 {showNotesList && (
                   <>
-                  <div onClick={function() { setShowNotesList(false); setRecentNotes([]); }} style={{ position: "fixed", inset: 0, zIndex: 199 }} />
+                  <div onClick={function() { setShowNotesList(false); }} style={{ position: "fixed", inset: 0, zIndex: 199 }} />
                   <div style={{ position: "absolute", top: "100%", left: 0, marginTop: 4, background: PALETTE.bone, borderRadius: 12, border: "1px solid " + PALETTE.faint, boxShadow: "0 12px 40px rgba(0,0,0,0.15)", zIndex: 200, width: Math.min(360, window.innerWidth - 32), maxHeight: "70vh", overflowY: "auto" }}>
-                    <div style={{ padding: "10px 14px", borderBottom: "1px solid " + PALETTE.faint, fontSize: 11, fontWeight: 600, color: PALETTE.lagune, textTransform: "uppercase", letterSpacing: ".5px" }}>
-                      Notas recientes
+                    <div style={{ padding: "10px 14px", borderBottom: "1px solid " + PALETTE.faint, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <span style={{ fontSize: 11, fontWeight: 600, color: PALETTE.lagune, textTransform: "uppercase", letterSpacing: ".5px" }}>Notas del equipo</span>
+                      <button onClick={function() { setShowAllNotes(true); setShowNotesList(false); }} style={{ fontSize: 10, color: PALETTE.lagune, background: "none", border: "none", cursor: "pointer", textDecoration: "underline" }}>Ver historial completo</button>
                     </div>
-                    {recentNotes.length === 0 && <div style={{ padding: 16, fontSize: 12, color: PALETTE.muted, textAlign: "center" }}>Sin notas recientes</div>}
-                    {recentNotes.map(function(note) {
+                    {allNotes.slice(0, 6).map(function(note) {
                       var t = tasks.find(function(tk) { return tk.id === note.task_id; });
                       return (
                         <div key={note.id} onClick={function() { if (t) { setModal(t); setShowNotesList(false); } }}
@@ -2108,6 +2157,7 @@ export default function App() {
                         </div>
                       );
                     })}
+                    {allNotes.length === 0 && <div style={{ padding: 16, fontSize: 12, color: PALETTE.muted, textAlign: "center" }}>Sin notas aun</div>}
                   </div>
                   </>
                 )}
