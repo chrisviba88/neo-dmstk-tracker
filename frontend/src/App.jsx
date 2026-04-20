@@ -1173,34 +1173,83 @@ function TaskModal({ task, owners, addOwner, tasks, onSave, onClose, onDelete })
   );
 }
 
-function SettingsPanel({ owners, addOwner, mergeOwners, onClose }) {
+function SettingsPanel({ owners, addOwner, mergeOwners, onClose, isAdmin }) {
   var [newName, setNewName] = useState("");
   var [mergeFrom, setMergeFrom] = useState("");
   var [mergeTo, setMergeTo] = useState("");
+  var [profiles, setProfiles] = useState([]);
+  var [loadingProfiles, setLoadingProfiles] = useState(false);
+
+  // Cargar perfiles si es admin
+  useEffect(function() {
+    if (!isAdmin) return;
+    setLoadingProfiles(true);
+    dbSelect('profiles', 'select=id,email,display_name,role,last_seen_at&order=created_at.asc')
+      .then(function(data) { setProfiles(data || []); })
+      .catch(function() {})
+      .finally(function() { setLoadingProfiles(false); });
+  }, [isAdmin]);
+
+  function changeRole(profileId, newRole) {
+    dbUpdate('profiles', profileId, { role: newRole })
+      .then(function() {
+        setProfiles(function(prev) { return prev.map(function(p) { return p.id === profileId ? { ...p, role: newRole } : p; }); });
+      })
+      .catch(function(err) { alert('Error: ' + err.message); });
+  }
 
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 500, background: "rgba(44,41,38,0.5)", display: "flex", justifyContent: "center", paddingTop: 60 }}
       onClick={onClose}>
       <div onClick={function(e) { e.stopPropagation(); }}
-        style={{ background: PALETTE.bone, borderRadius: 16, border: "1px solid " + PALETTE.faint, width: "100%", maxWidth: 440, height: "fit-content", boxShadow: "0 24px 80px rgba(0,0,0,0.15)" }}>
+        style={{ background: PALETTE.bone, borderRadius: 16, border: "1px solid " + PALETTE.faint, width: "100%", maxWidth: 480, maxHeight: "80vh", overflowY: "auto", boxShadow: "0 24px 80px rgba(0,0,0,0.15)" }}>
 
-        <div style={{ padding: "20px 24px", borderBottom: "1px solid " + PALETTE.faint, display: "flex", justifyContent: "space-between", alignItems: "center", background: PALETTE.warm }}>
-          <h3 style={{ fontFamily: SERIF, fontSize: 18, fontWeight: 400, margin: 0 }}>Gestión de equipo</h3>
+        <div style={{ padding: "20px 24px", borderBottom: "1px solid " + PALETTE.faint, display: "flex", justifyContent: "space-between", alignItems: "center", background: PALETTE.warm, position: "sticky", top: 0, zIndex: 1 }}>
+          <h3 style={{ fontFamily: SERIF, fontSize: 18, fontWeight: 400, margin: 0 }}>Gestion de equipo</h3>
           <button onClick={onClose} style={{ border: "none", background: "transparent", cursor: "pointer", color: PALETTE.muted }}><X size={18} /></button>
         </div>
 
         <div style={{ padding: "20px 24px" }}>
-          <div style={{ fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: ".8px", color: PALETTE.muted, fontFamily: "var(--font-mono)", marginBottom: 8 }}>Miembros</div>
+          {/* Panel de roles — solo admins */}
+          {isAdmin && (
+            <div style={{ marginBottom: 24 }}>
+              <div style={{ fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: ".8px", color: PALETTE.lagune, fontFamily: "var(--font-mono)", marginBottom: 10 }}>Usuarios y roles</div>
+              {loadingProfiles ? (
+                <div style={{ fontSize: 11, color: PALETTE.muted }}>Cargando...</div>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                  {profiles.map(function(p) {
+                    return (
+                      <div key={p.id} style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 10px", borderRadius: 8, background: PALETTE.warm, border: "1px solid " + PALETTE.faint + "40" }}>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontSize: 12, fontWeight: 500, color: PALETTE.ink }}>{p.display_name}</div>
+                          <div style={{ fontSize: 10, color: PALETTE.muted }}>{p.email}</div>
+                        </div>
+                        <select value={p.role} onChange={function(e) { changeRole(p.id, e.target.value); }}
+                          style={{ fontSize: 11, padding: "4px 8px", borderRadius: 4, border: "1px solid " + PALETTE.faint, background: PALETTE.bone, color: p.role === 'admin' ? PALETTE.nectarine : p.role === 'pm' ? PALETTE.lagune : PALETTE.muted, fontWeight: 600 }}>
+                          <option value="admin">Admin</option>
+                          <option value="pm">PM</option>
+                          <option value="viewer">Viewer</option>
+                        </select>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
+
+          <div style={{ fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: ".8px", color: PALETTE.muted, fontFamily: "var(--font-mono)", marginBottom: 8 }}>Miembros (owners de tareas)</div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 20 }}>
             {owners.map(function(o) { return <Badge key={o} color={PALETTE.lagune} bg={PALETTE.lagune + "12"}>{o}</Badge>; })}
           </div>
 
-          <div style={{ fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: ".8px", color: PALETTE.muted, fontFamily: "var(--font-mono)", marginBottom: 8 }}>Añadir miembro</div>
+          <div style={{ fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: ".8px", color: PALETTE.muted, fontFamily: "var(--font-mono)", marginBottom: 8 }}>Anadir miembro</div>
           <div style={{ display: "flex", gap: 6, marginBottom: 20 }}>
             <input value={newName} onChange={function(e) { setNewName(e.target.value); }} placeholder="Nombre…"
               style={{ flex: 1, fontSize: 13, padding: "8px 12px", borderRadius: 8, border: "1px solid " + PALETTE.faint }} />
             <button onClick={function() { if (newName.trim()) { addOwner(newName.trim()); setNewName(""); } }}
-              style={{ padding: "8px 14px", borderRadius: 8, fontSize: 12, fontWeight: 500, background: PALETTE.lagune, color: "#fff", border: "none", cursor: "pointer" }}>Añadir</button>
+              style={{ padding: "8px 14px", borderRadius: 8, fontSize: 12, fontWeight: 500, background: PALETTE.lagune, color: "#fff", border: "none", cursor: "pointer" }}>Anadir</button>
           </div>
 
           <div style={{ fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: ".8px", color: PALETTE.muted, fontFamily: "var(--font-mono)", marginBottom: 8 }}>Fusionar</div>
@@ -1212,7 +1261,7 @@ function SettingsPanel({ owners, addOwner, mergeOwners, onClose }) {
               style={{ padding: "8px 14px", borderRadius: 8, fontSize: 12, fontWeight: 500, background: PALETTE.nectarine, color: "#fff", border: "none", cursor: "pointer" }}>Fusionar</button>
           </div>
           <div style={{ fontSize: 11, color: PALETTE.muted, marginTop: 8 }}>
-            Tareas de «{mergeFrom || "…"}» pasarán a «{mergeTo || "…"}»
+            Tareas de «{mergeFrom || "…"}» pasaran a «{mergeTo || "…"}»
           </div>
         </div>
       </div>
@@ -1585,6 +1634,7 @@ export default function App() {
   }, [tasks, owners]);
 
   async function updateTask(id, changes) {
+    if (!canEdit) return;
     undoStack.current.push([...tasks]);
     if (undoStack.current.length > MAX_UNDO) undoStack.current.shift();
     redoStack.current = [];
@@ -1613,6 +1663,7 @@ export default function App() {
   }
 
   async function deleteTask(id) {
+    if (!canEdit) return;
     if (confirm("Eliminar tarea?")) {
       undoStack.current.push([...tasks]);
       redoStack.current = [];
@@ -1653,6 +1704,7 @@ export default function App() {
   }
 
   async function addTask(t) {
+    if (!canEdit) return;
     undoStack.current.push([...tasks]);
     redoStack.current = [];
     const newTask = enrichTask({ ...t, id: makeId(), deleted: false });
@@ -1751,8 +1803,8 @@ export default function App() {
       <style>{"@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}"}</style>
       <h2 className="sr-only">NEO DMSTK project tracker</h2>
 
-      {modal ? <TaskModal task={modal} owners={owners} addOwner={handleAddOwner} tasks={activeTasks} onSave={function(t) { if (t.id) updateTask(t.id, t); else addTask(t); setModal(null); }} onClose={function() { setModal(null); }} onDelete={function(id) { deleteTask(id); }} /> : null}
-      {showSettings ? <SettingsPanel owners={owners} addOwner={handleAddOwner} mergeOwners={handleMergeOwners} onClose={function() { setShowSettings(false); }} /> : null}
+      {modal ? <TaskModal task={modal} owners={owners} addOwner={handleAddOwner} tasks={activeTasks} onSave={canEdit ? function(t) { if (t.id) updateTask(t.id, t); else addTask(t); setModal(null); } : null} onClose={function() { setModal(null); }} onDelete={canEdit ? function(id) { deleteTask(id); } : null} readOnly={!canEdit} /> : null}
+      {showSettings ? <SettingsPanel owners={owners} addOwner={handleAddOwner} mergeOwners={handleMergeOwners} onClose={function() { setShowSettings(false); }} isAdmin={isAdmin} /> : null}
 
       {/* Panel de historial */}
       {showHistory ? (
@@ -1816,9 +1868,10 @@ export default function App() {
         <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "4px 10px", borderRadius: 6, background: PALETTE.warm, fontSize: 11, color: PALETTE.soft }}>
           <UserIcon size={13} />
           <span style={{ fontWeight: 500 }}>{profile?.display_name || user?.email}</span>
-          <span style={{ fontSize: 9, padding: "1px 5px", borderRadius: 3, background: isAdmin ? PALETTE.nectarine + '30' : PALETTE.lagune + '20', color: isAdmin ? PALETTE.nectarine : PALETTE.lagune, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+          <span style={{ fontSize: 9, padding: "1px 5px", borderRadius: 3, background: isAdmin ? PALETTE.nectarine + '30' : canEdit ? PALETTE.lagune + '20' : PALETTE.danger + '15', color: isAdmin ? PALETTE.nectarine : canEdit ? PALETTE.lagune : PALETTE.danger, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
             {profile?.role}
           </span>
+          {!canEdit && <span style={{ fontSize: 9, padding: "1px 5px", borderRadius: 3, background: PALETTE.danger + '12', color: PALETTE.danger, fontWeight: 600, letterSpacing: '0.3px' }}>Solo lectura</span>}
           <button onClick={signOut} style={{ background: "none", border: "none", cursor: "pointer", color: PALETTE.muted, padding: 2, display: "flex" }} title="Cerrar sesion"><LogOut size={13} /></button>
         </div>
 
@@ -1914,8 +1967,8 @@ export default function App() {
         <DailyBriefing tasks={activeTasks} milestones={MILESTONES} PALETTE={PALETTE} />
         <DashboardView kpis={kpis} setModal={setModal} tasks={activeTasks} />
       </> : null}
-      {view === "tasks" ? <ExcelTasksView tasks={filtered} owners={owners} onUpdateTask={updateTask} onDeleteTask={deleteTask} onTaskClick={function(task) { setModal(task); }} sortKey={sortKey} sortDir={sortDir} onSort={function(k) { if (sortKey === k) setSortDir(-sortDir); else { setSortKey(k); setSortDir(1); } }} /> : null}
-      {view === "timeline" ? <SummaryTimelineView tasks={filtered} PALETTE={PALETTE} SERIF={SERIF} onUpdateTask={updateTask} onDeleteTask={deleteTask} /> : null}
+      {view === "tasks" ? <ExcelTasksView tasks={filtered} owners={owners} onUpdateTask={canEdit ? updateTask : null} onDeleteTask={canEdit ? deleteTask : null} onTaskClick={function(task) { setModal(task); }} sortKey={sortKey} sortDir={sortDir} onSort={function(k) { if (sortKey === k) setSortDir(-sortDir); else { setSortKey(k); setSortDir(1); } }} readOnly={!canEdit} /> : null}
+      {view === "timeline" ? <SummaryTimelineView tasks={filtered} PALETTE={PALETTE} SERIF={SERIF} onUpdateTask={canEdit ? updateTask : null} onDeleteTask={canEdit ? deleteTask : null} readOnly={!canEdit} /> : null}
 
       {/* PM Inteligente — ventana flotante, disponible en todas las vistas */}
       <PMAgent tasks={activeTasks} milestones={MILESTONES} PALETTE={PALETTE} SERIF={SERIF} />
