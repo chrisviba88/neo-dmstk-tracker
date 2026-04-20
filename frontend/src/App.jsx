@@ -1069,7 +1069,7 @@ function TaskModal({ task, owners, addOwner, tasks, onSave, onClose, onDelete, r
 
         <div style={{ padding: "20px 28px", borderBottom: "1px solid " + PALETTE.faint, display: "flex", justifyContent: "space-between", alignItems: "center", background: PALETTE.warm }}>
           <div>
-            <h3 style={{ fontFamily: SERIF, fontSize: 22, fontWeight: 400, margin: 0, color: PALETTE.ink }}>{isNew ? "Nueva tarea" : "Editar tarea"}</h3>
+            <h3 style={{ fontFamily: SERIF, fontSize: 22, fontWeight: 400, margin: 0, color: PALETTE.ink }}>{isNew ? "Nueva tarea" : readOnly ? "Detalle de tarea" : "Editar tarea"}</h3>
             {!isNew && <div style={{ fontSize: 11, color: PALETTE.muted, fontFamily: "var(--font-mono)", marginTop: 4 }}>{form.id} · {form.level === "epic" ? "Iniciativa" : "Tarea"} · {form.familyLabel}</div>}
           </div>
           <button onClick={onClose} style={{ border: "none", background: "transparent", cursor: "pointer", color: PALETTE.muted, padding: 4 }}><X size={20} /></button>
@@ -1077,85 +1077,108 @@ function TaskModal({ task, owners, addOwner, tasks, onSave, onClose, onDelete, r
 
         <div style={{ padding: "24px 28px", display: "flex", flexDirection: "column", gap: 16, maxHeight: "65vh", overflowY: "auto" }}>
 
-          <FieldLabel label="Nombre">
-            <input value={form.name} onChange={function(e) { set("name", e.target.value); }}
-              style={{ ...inputStyle, fontFamily: SERIF, fontSize: 16 }} placeholder="Nombre de la tarea…" />
-          </FieldLabel>
+          {readOnly ? (
+            /* ===== MODO VIEWER: solo texto plano ===== */
+            <>
+              <div style={{ fontFamily: SERIF, fontSize: 18, color: PALETTE.ink }}>{form.name}</div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
-            <FieldLabel label="Area">
-              <select value={form.family || ""} onChange={function(e) { setFamily(e.target.value); }} style={{ ...inputStyle, fontSize: 13 }}>
-                <option value="">Seleccionar...</option>
-                {FAMILY_LIST.map(function(f) { return <option key={f.code} value={f.code}>{f.label}</option>; })}
-              </select>
-            </FieldLabel>
-            <FieldLabel label="Responsables">
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginBottom: 4 }}>
-                {(form.owner || "").split(",").filter(Boolean).map(function(o, i) {
-                  var name = o.trim();
-                  return name ? (
-                    <span key={i} style={{ display: "inline-flex", alignItems: "center", gap: 3, background: PALETTE.lagune + "12", color: PALETTE.lagune, padding: "3px 8px", borderRadius: 4, fontSize: 11, fontWeight: 500 }}>
-                      {name}
-                      <span onClick={function() { var parts = form.owner.split(",").map(function(s){return s.trim();}).filter(function(s){return s && s !== name;}); set("owner", parts.join(", ")); }} style={{ cursor: "pointer", opacity: 0.6 }}>x</span>
-                    </span>
-                  ) : null;
-                })}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
+                <FieldLabel label="Estado"><span style={{ fontSize: 13, padding: "4px 10px", borderRadius: 6, background: (STATUS_COLORS[form.status]||PALETTE.muted) + "18", color: STATUS_COLORS[form.status]||PALETTE.muted, fontWeight: 600 }}>{form.status}</span></FieldLabel>
+                <FieldLabel label="Prioridad"><span style={{ fontSize: 13, padding: "4px 10px", borderRadius: 6, background: (PRIORITY_COLORS[form.priority]||PALETTE.muted) + "18", color: PRIORITY_COLORS[form.priority]||PALETTE.muted, fontWeight: 600 }}>{PRIORITY_LABELS[form.priority]||form.priority}</span></FieldLabel>
+                <FieldLabel label="Riesgo"><span style={{ fontSize: 13, color: PALETTE.soft }}>{form.risk || '-'}</span></FieldLabel>
               </div>
-              <select onChange={function(e) { if (e.target.value) { var current = form.owner ? form.owner.split(",").map(function(s){return s.trim();}).filter(Boolean) : []; if (!current.includes(e.target.value)) { set("owner", [...current, e.target.value].join(", ")); } e.target.value = ""; } }} style={{ ...inputStyle, fontSize: 12, color: PALETTE.soft }}>
-                <option value="">+ Agregar responsable...</option>
-                {owners.map(function(o) { return <option key={o} value={o}>{o}</option>; })}
-              </select>
-            </FieldLabel>
-          </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 14 }}>
-            <FieldLabel label="Estado">
-              <SelectField value={form.status} onChange={function(v) { set("status", v); }} options={STATUSES} style={{ ...inputStyle, fontSize: 13 }} />
-            </FieldLabel>
-            <FieldLabel label="Prioridad">
-              <select value={form.priority} onChange={function(e) { set("priority", e.target.value); }} style={{ ...inputStyle, fontSize: 13 }}>
-                <option value="P0">Critica</option>
-                <option value="P1">Alta</option>
-                <option value="P2">Media</option>
-                <option value="P3">Baja</option>
-              </select>
-            </FieldLabel>
-            <FieldLabel label="Hito">
-              <button onClick={function() { set("isMilestone", !form.isMilestone); }}
-                style={{ ...inputStyle, cursor: "pointer", textAlign: "center", fontFamily: SERIF, color: form.isMilestone ? PALETTE.mostaza : PALETTE.muted, background: form.isMilestone ? "#E2B93B12" : "#fff", border: "1px solid " + (form.isMilestone ? PALETTE.mostaza : PALETTE.faint), fontWeight: form.isMilestone ? 600 : 400 }}>
-                {form.isMilestone ? "Hito" : "No"}
-              </button>
-            </FieldLabel>
-          </div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                <FieldLabel label="Area"><span style={{ fontSize: 13, color: PALETTE.ink }}>{form.familyLabel || form.family || '-'}</span></FieldLabel>
+                <FieldLabel label="Responsable"><span style={{ fontSize: 13, color: PALETTE.ink }}>{form.owner || 'Sin asignar'}</span></FieldLabel>
+              </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 14 }}>
-            <FieldLabel label="Etapa">
-              <SelectField value={form.stage || ""} onChange={function(v) { set("stage", v); }} options={Object.keys(STAGES)} style={{ ...inputStyle, fontSize: 13 }} />
-            </FieldLabel>
-            <FieldLabel label="Alcance">
-              <SelectField value={form.scope || ""} onChange={function(v) { set("scope", v); }} options={SCOPES} style={{ ...inputStyle, fontSize: 13 }} />
-            </FieldLabel>
-            <FieldLabel label="Riesgo">
-              <SelectField value={form.risk || ""} onChange={function(v) { set("risk", v); }} options={["CRITICO","ALTO","MEDIO","BAJO"]} style={{ ...inputStyle, fontSize: 13 }} />
-            </FieldLabel>
-          </div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
+                <FieldLabel label="Inicio"><span style={{ fontSize: 13, color: PALETTE.ink }}>{form.startDate || '-'}</span></FieldLabel>
+                <FieldLabel label="Fin"><span style={{ fontSize: 13, color: PALETTE.ink }}>{form.endDate || '-'}</span></FieldLabel>
+                <FieldLabel label="Etapa"><span style={{ fontSize: 13, color: PALETTE.soft }}>{form.stage || '-'}</span></FieldLabel>
+              </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
-            <FieldLabel label="Inicio">
-              <input type="date" value={form.startDate} onChange={function(e) { set("startDate", e.target.value); }} style={{ ...inputStyle, fontSize: 13 }} />
-            </FieldLabel>
-            <FieldLabel label="Fin">
-              <input type="date" value={form.endDate} onChange={function(e) { set("endDate", e.target.value); }} style={{ ...inputStyle, fontSize: 13 }} />
-            </FieldLabel>
-          </div>
+              {form.notes && <FieldLabel label="Notas"><div style={{ fontSize: 13, color: PALETTE.soft, lineHeight: 1.5 }}>{form.notes}</div></FieldLabel>}
+            </>
+          ) : (
+            /* ===== MODO EDITOR: formulario completo ===== */
+            <>
+              <FieldLabel label="Nombre">
+                <input value={form.name} onChange={function(e) { set("name", e.target.value); }}
+                  style={{ ...inputStyle, fontFamily: SERIF, fontSize: 16 }} placeholder="Nombre de la tarea…" />
+              </FieldLabel>
 
-          <FieldLabel label="Notas">
-            {readOnly ? (
-              <div style={{ fontSize: 13, color: PALETTE.soft, padding: "8px 0" }}>{form.notes || 'Sin notas'}</div>
-            ) : (
-              <textarea value={form.notes} onChange={function(e) { set("notes", e.target.value); }} rows={2}
-                style={{ ...inputStyle, fontSize: 13, resize: "vertical" }} placeholder="Notas…" />
-            )}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+                <FieldLabel label="Area">
+                  <select value={form.family || ""} onChange={function(e) { setFamily(e.target.value); }} style={{ ...inputStyle, fontSize: 13 }}>
+                    <option value="">Seleccionar...</option>
+                    {FAMILY_LIST.map(function(f) { return <option key={f.code} value={f.code}>{f.label}</option>; })}
+                  </select>
+                </FieldLabel>
+                <FieldLabel label="Responsables">
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginBottom: 4 }}>
+                    {(form.owner || "").split(",").filter(Boolean).map(function(o, i) {
+                      var name = o.trim();
+                      return name ? (
+                        <span key={i} style={{ display: "inline-flex", alignItems: "center", gap: 3, background: PALETTE.lagune + "12", color: PALETTE.lagune, padding: "3px 8px", borderRadius: 4, fontSize: 11, fontWeight: 500 }}>
+                          {name}
+                          <span onClick={function() { var parts = form.owner.split(",").map(function(s){return s.trim();}).filter(function(s){return s && s !== name;}); set("owner", parts.join(", ")); }} style={{ cursor: "pointer", opacity: 0.6 }}>x</span>
+                        </span>
+                      ) : null;
+                    })}
+                  </div>
+                  <select onChange={function(e) { if (e.target.value) { var current = form.owner ? form.owner.split(",").map(function(s){return s.trim();}).filter(Boolean) : []; if (!current.includes(e.target.value)) { set("owner", [...current, e.target.value].join(", ")); } e.target.value = ""; } }} style={{ ...inputStyle, fontSize: 12, color: PALETTE.soft }}>
+                    <option value="">+ Agregar responsable...</option>
+                    {owners.map(function(o) { return <option key={o} value={o}>{o}</option>; })}
+                  </select>
+                </FieldLabel>
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 14 }}>
+                <FieldLabel label="Estado">
+                  <SelectField value={form.status} onChange={function(v) { set("status", v); }} options={STATUSES} style={{ ...inputStyle, fontSize: 13 }} />
+                </FieldLabel>
+                <FieldLabel label="Prioridad">
+                  <select value={form.priority} onChange={function(e) { set("priority", e.target.value); }} style={{ ...inputStyle, fontSize: 13 }}>
+                    <option value="P0">Critica</option><option value="P1">Alta</option><option value="P2">Media</option><option value="P3">Baja</option>
+                  </select>
+                </FieldLabel>
+                <FieldLabel label="Hito">
+                  <button onClick={function() { set("isMilestone", !form.isMilestone); }}
+                    style={{ ...inputStyle, cursor: "pointer", textAlign: "center", fontFamily: SERIF, color: form.isMilestone ? PALETTE.mostaza : PALETTE.muted, background: form.isMilestone ? "#E2B93B12" : "#fff", border: "1px solid " + (form.isMilestone ? PALETTE.mostaza : PALETTE.faint), fontWeight: form.isMilestone ? 600 : 400 }}>
+                    {form.isMilestone ? "Hito" : "No"}
+                  </button>
+                </FieldLabel>
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 14 }}>
+                <FieldLabel label="Etapa">
+                  <SelectField value={form.stage || ""} onChange={function(v) { set("stage", v); }} options={Object.keys(STAGES)} style={{ ...inputStyle, fontSize: 13 }} />
+                </FieldLabel>
+                <FieldLabel label="Alcance">
+                  <SelectField value={form.scope || ""} onChange={function(v) { set("scope", v); }} options={SCOPES} style={{ ...inputStyle, fontSize: 13 }} />
+                </FieldLabel>
+                <FieldLabel label="Riesgo">
+                  <SelectField value={form.risk || ""} onChange={function(v) { set("risk", v); }} options={["CRITICO","ALTO","MEDIO","BAJO"]} style={{ ...inputStyle, fontSize: 13 }} />
+                </FieldLabel>
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+                <FieldLabel label="Inicio">
+                  <input type="date" value={form.startDate} onChange={function(e) { set("startDate", e.target.value); }} style={{ ...inputStyle, fontSize: 13 }} />
+                </FieldLabel>
+                <FieldLabel label="Fin">
+                  <input type="date" value={form.endDate} onChange={function(e) { set("endDate", e.target.value); }} style={{ ...inputStyle, fontSize: 13 }} />
+                </FieldLabel>
+              </div>
+
+              <FieldLabel label="Notas">
+                <textarea value={form.notes} onChange={function(e) { set("notes", e.target.value); }} rows={2}
+                  style={{ ...inputStyle, fontSize: 13, resize: "vertical" }} placeholder="Notas…" />
+              </FieldLabel>
+            </>
+          )}
           </FieldLabel>
 
           {/* Notas del equipo — todos pueden escribir, incluso viewers */}
