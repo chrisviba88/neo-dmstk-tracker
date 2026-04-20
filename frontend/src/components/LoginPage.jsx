@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { supabase } from '../lib/supabase';
 import { Lock, Mail, User, Eye, EyeOff, AlertCircle, Loader } from 'lucide-react';
 
 const PALETTE = {
@@ -28,22 +29,46 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState('');
 
+  const [debug, setDebug] = useState('');
+
+  // Test de conectividad al montar
+  useEffect(() => {
+    const url = import.meta.env.VITE_SUPABASE_URL;
+    const key = import.meta.env.VITE_SUPABASE_ANON_KEY;
+    setDebug(`URL: ${url ? url.substring(0, 30) + '...' : 'NO DEFINIDA'} | Key: ${key ? 'OK (' + key.length + ' chars)' : 'NO DEFINIDA'}`);
+
+    // Test fetch directo (sin supabase client)
+    if (url && key) {
+      fetch(`${url}/auth/v1/health`, { headers: { apikey: key } })
+        .then(r => r.json())
+        .then(d => setDebug(prev => prev + ` | Health: ${d.name || 'OK'}`))
+        .catch(e => setDebug(prev => prev + ` | Health FAIL: ${e.message}`));
+    }
+  }, []);
+
   async function handleSubmit(e) {
     e.preventDefault();
     setError('');
     setSuccess('');
     setLoading(true);
+    setDebug('Intentando login...');
 
     try {
+      setDebug('Enviando login...');
+
       if (mode === 'login') {
         await signIn(email, password);
+        setDebug('Login OK — app lista');
+        setSuccess('Login exitoso');
       } else {
         await signUp(email, password, displayName);
         setSuccess('Cuenta creada. Revisa tu correo para confirmar.');
         setMode('login');
       }
     } catch (err) {
-      const msg = err.message || 'Error desconocido';
+      const msg = err?.message || String(err) || 'Error desconocido';
+      console.error('[Login] Error:', msg, err);
+      setDebug(`Error: ${msg}`);
       if (msg.includes('Invalid login')) setError('Email o contrasena incorrectos');
       else if (msg.includes('already registered')) setError('Este email ya esta registrado');
       else if (msg.includes('Password should be')) setError('La contrasena debe tener minimo 6 caracteres');
@@ -325,6 +350,23 @@ export default function LoginPage() {
             )}
           </div>
         </div>
+
+        {/* Debug — eliminar despues */}
+        {debug && (
+          <div style={{
+            marginTop: 16,
+            padding: '8px 12px',
+            borderRadius: 8,
+            background: '#1a1a1a',
+            color: '#8f8',
+            fontSize: 10,
+            fontFamily: 'monospace',
+            wordBreak: 'break-all',
+            lineHeight: 1.5,
+          }}>
+            {debug}
+          </div>
+        )}
 
         {/* Footer */}
         <div style={{
