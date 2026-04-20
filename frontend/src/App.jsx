@@ -5,18 +5,16 @@ import {
   Save, ArrowUpDown, Link2, Users, ArrowRight, Wifi, WifiOff, MessageCircle, TrendingUp, History, Eye, EyeOff, Check,
   LogOut, User as UserIcon
 } from "lucide-react";
-import io from 'socket.io-client';
 import { supabase, BACKEND_URL } from './lib/supabase';
 import { dbSelect, dbInsert, dbUpdate, dbDelete, isAuthenticated } from './lib/db';
+import { connectRealtime, disconnect as disconnectRealtime } from './lib/realtime';
 import { useAuth } from './contexts/AuthContext';
 import GlobalSearch from './components/GlobalSearch';
 import ViewManager from './components/ViewManager';
 import ExcelTasksView from './components/ExcelTasksView';
 import SummaryTimelineView from './components/SummaryTimelineView';
 import { TASKS_V2, FAMILIES, PILLARS, STAGES, MILESTONES } from './data/tasks-v2';
-import PMAgent, { StaticAlerts } from './components/PMAgent';
-
-let socket;
+import PMAgent, { StaticAlerts, DailyBriefing } from './components/PMAgent';
 
 const PALETTE = {
   nectarine: "#D7897F",
@@ -1283,51 +1281,41 @@ export default function App() {
     return function() { window.removeEventListener('keydown', handleKeyDown); };
   }, [tasks]);
 
-  // Conectar a Socket.IO y Supabase
+  // Conectar Supabase Realtime + cargar datos
   useEffect(function() {
-    // Socket.IO — solo si el backend esta corriendo (no critico)
-    if (BACKEND_URL) {
-      socket = io(BACKEND_URL, { reconnectionAttempts: 3, timeout: 5000 });
+    // Supabase Realtime — sincronizacion multiusuario
+    connectRealtime(
+      // onChange: cuando otro usuario modifica una tarea
+      function(change) {
+        if (!change?.record) return;
+        const task = enrichTask(change.record);
 
-      socket.on('connect', () => {
-        console.log('✅ Conectado al servidor');
-        setIsConnected(true);
-        socket.emit('user:join', { name: profile?.display_name || user?.email || 'Usuario', timestamp: new Date() });
-      });
-
-      socket.on('disconnect', () => {
-        console.log('❌ Desconectado del servidor');
-        setIsConnected(false);
-      });
-
-      socket.on('users:update', (users) => {
-        setUsersOnline(users.length);
-      });
-
-      socket.on('task:updated', (task) => {
-        setTasks(prev => {
-          const existing = prev.find(t => t.id === task.id);
-          if (existing) {
-            return prev.map(t => t.id === task.id ? task : t);
+        if (change.type === 'INSERT') {
+          setTasks(prev => {
+            if (prev.find(t => t.id === task.id)) return prev; // ya existe
+            return [...prev, task];
+          });
+        } else if (change.type === 'UPDATE') {
+          if (task.deleted) {
+            setTasks(prev => prev.filter(t => t.id !== task.id));
+          } else {
+            setTasks(prev => prev.map(t => t.id === task.id ? task : t));
           }
-          return [...prev, task];
-        });
-      });
+        } else if (change.type === 'DELETE') {
+          setTasks(prev => prev.filter(t => t.id !== (change.old_record?.id || task.id)));
+        }
+      },
+      // onStatus: estado de conexion
+      function(status) {
+        setIsConnected(status === 'connected');
+      }
+    );
 
-      socket.on('task:created', (task) => {
-        setTasks(prev => [...prev, task]);
-      });
-
-      socket.on('task:deleted', (taskId) => {
-        setTasks(prev => prev.filter(t => t.id !== taskId));
-      });
-    }
-
-    // Cargar datos iniciales desde Supabase
+    // Cargar datos iniciales
     loadData();
 
     return () => {
-      if (socket) socket.disconnect();
+      disconnectRealtime();
     };
   }, []);
 
@@ -1614,7 +1602,7 @@ export default function App() {
       );
     }
 
-    if (socket && socket.connected) socket.emit('task:update', task);
+    // Realtime: Supabase broadcast automatico via postgres_changes
   }
 
   async function saveAllChanges() {
@@ -1641,9 +1629,7 @@ export default function App() {
         );
       }
 
-      if (socket && socket.connected) {
-        socket.emit('task:delete', id);
-      }
+      // Realtime: Supabase broadcast automatico via postgres_changes
     }
   }
 
@@ -1682,9 +1668,7 @@ export default function App() {
       );
     }
 
-    if (socket && socket.connected) {
-      socket.emit('task:update', newTask);
-    }
+    // Realtime: Supabase broadcast automatico via postgres_changes
   }
 
   // Reset a datos originales (borra localStorage y recarga desde archivo)
@@ -1926,7 +1910,10 @@ export default function App() {
         </div>
       ) : null}
 
-      {view === "dashboard" ? <DashboardView kpis={kpis} setModal={setModal} tasks={activeTasks} /> : null}
+      {view === "dashboard" ? <>
+        <DailyBriefing tasks={activeTasks} milestones={MILESTONES} PALETTE={PALETTE} />
+        <DashboardView kpis={kpis} setModal={setModal} tasks={activeTasks} />
+      </> : null}
       {view === "tasks" ? <ExcelTasksView tasks={filtered} owners={owners} onUpdateTask={updateTask} onDeleteTask={deleteTask} onTaskClick={function(task) { setModal(task); }} sortKey={sortKey} sortDir={sortDir} onSort={function(k) { if (sortKey === k) setSortDir(-sortDir); else { setSortKey(k); setSortDir(1); } }} /> : null}
       {view === "timeline" ? <SummaryTimelineView tasks={filtered} PALETTE={PALETTE} SERIF={SERIF} onUpdateTask={updateTask} onDeleteTask={deleteTask} /> : null}
 

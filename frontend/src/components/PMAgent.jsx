@@ -1,49 +1,54 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { dbSelect, dbInsert, isAuthenticated } from '../lib/db';
+import { useAuth } from '../contexts/AuthContext';
 
 const GEMINI_API_KEY = 'AIzaSyCK0a7Ke0f8oXtqjb61UdCZCipCQ_jKaIE';
-const GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' + GEMINI_API_KEY;
+const GEMINI_MODEL = 'gemini-2.5-flash-preview-05-20';
+const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
 
 function buildProjectContext(tasks, milestones) {
   const today = new Date().toISOString().split('T')[0];
   const total = tasks.length;
   const done = tasks.filter(t => t.status === 'Hecho').length;
+  const inProgress = tasks.filter(t => t.status === 'En curso').length;
   const overdue = tasks.filter(t => t.status !== 'Hecho' && t.endDate < today);
   const thisWeek = tasks.filter(t => {
     if (t.status === 'Hecho') return false;
     const diff = (new Date(t.endDate) - new Date()) / 864e5;
     return diff >= 0 && diff <= 7;
   });
+  const p0 = tasks.filter(t => t.priority === 'P0' && t.status !== 'Hecho');
 
   const byFamily = {};
   tasks.forEach(t => {
-    if (!byFamily[t.family]) byFamily[t.family] = { label: t.familyLabel, total: 0, done: 0, overdue: 0, tasks: [] };
+    if (!byFamily[t.family]) byFamily[t.family] = { label: t.familyLabel || t.family, total: 0, done: 0, overdue: 0 };
     byFamily[t.family].total++;
     if (t.status === 'Hecho') byFamily[t.family].done++;
     if (t.status !== 'Hecho' && t.endDate < today) byFamily[t.family].overdue++;
-    byFamily[t.family].tasks.push(t);
   });
 
-  const familySummary = Object.entries(byFamily).map(([code, data]) => {
-    const epic = data.tasks.find(t => t.level === 'epic');
-    return `${data.label}: ${data.done}/${data.total} completadas, ${data.overdue} vencidas. Iniciativa: "${epic?.name || '?'}" (${epic?.status || '?'})`;
-  }).join('\n');
-
-  const overdueList = overdue.slice(0, 20).map(t =>
-    `- ${t.id} "${t.name}" (${t.familyLabel}) | Vencio: ${t.endDate} | Owner: ${t.owner} | Prioridad: ${t.priority}`
+  const familySummary = Object.entries(byFamily).map(([code, d]) =>
+    `${d.label} (${code}): ${d.done}/${d.total} hechas, ${d.overdue} vencidas`
   ).join('\n');
 
-  const milestonesSummary = Object.values(milestones).map(ms => {
+  const overdueTop = overdue.slice(0, 15).map(t =>
+    `- [${t.priority}] "${t.name}" | Area: ${t.familyLabel} | Vencio: ${t.endDate} | Owner: ${t.owner}`
+  ).join('\n');
+
+  const thisWeekTop = thisWeek.slice(0, 10).map(t =>
+    `- [${t.priority}] "${t.name}" | Fin: ${t.endDate} | Owner: ${t.owner} | Estado: ${t.status}`
+  ).join('\n');
+
+  const milestonesSummary = milestones ? Object.values(milestones).map(ms => {
     const days = Math.ceil((new Date(ms.date) - new Date()) / 864e5);
-    const linked = tasks.filter(t => t.milestone === ms.key);
-    const linkedDone = linked.filter(t => t.status === 'Hecho').length;
-    return `${ms.label}: ${ms.date} (${days} dias) — ${linkedDone}/${linked.length} tareas listas`;
-  }).join('\n');
+    return `${ms.label}: ${ms.date} (${days > 0 ? days + ' dias' : Math.abs(days) + ' dias pasado'})`;
+  }).join('\n') : 'Sin hitos definidos';
 
-  return `# Proyecto NEO DMSTK — ${today}
-Espacios de experiencias creativas (wellness + arte manual). E1 Madrid, E2 Barcelona (Q1 2027).
-Metodo PERMA. Piloto de validacion. GO/NO-GO con board inversores.
+  return `# Estado del Proyecto NEO DMSTK — ${today}
+Espacios de experiencias creativas (wellness + arte manual). Soft opening 1 sept 2026.
+E1 Madrid (en construccion), E2 Barcelona (Q1 2027).
 
-## Numeros: ${total} tareas, ${done} hechas (${Math.round(done/total*100)}%), ${overdue.length} vencidas, ${thisWeek.length} esta semana
+## Resumen: ${total} tareas | ${done} hechas (${Math.round(done/total*100)}%) | ${inProgress} en curso | ${overdue.length} vencidas | ${p0.length} criticas pendientes
 
 ## Hitos
 ${milestonesSummary}
@@ -51,18 +56,31 @@ ${milestonesSummary}
 ## Por area
 ${familySummary}
 
+## Esta semana (${thisWeek.length})
+${thisWeekTop || 'Nada pendiente esta semana'}
+
 ## Vencidas (${overdue.length})
-${overdueList || 'Ninguna'}`;
+${overdueTop || 'Ninguna'}
+
+## Criticas P0 pendientes (${p0.length})
+${p0.map(t => `- "${t.name}" | Owner: ${t.owner} | Fin: ${t.endDate}`).join('\n') || 'Ninguna'}`;
 }
 
-const SYSTEM_PROMPT = `Eres el PM experto del proyecto NEO DMSTK. Analiza datos reales y da respuestas precisas.
+const SYSTEM_PROMPT = `Eres el PM Senior experto del proyecto NEO DMSTK. Tu trabajo es analizar datos REALES del proyecto y dar recomendaciones concretas.
 
-Reglas:
-- Espanol, directo, sin rodeos, sin emojis
-- Cada alerta: QUE pasa + POR QUE importa + QUE HACER concreto + QUIEN debe hacerlo
-- Usa nombres reales: David (director), Christian (operaciones), Cristina (legal), Miguel Marquez (contenido)
-- Se especifico: "David debe confirmar X antes del viernes" no "hay que resolver X"
-- Formato: **negritas** para enfasis, - para listas`;
+CONTEXTO DEL NEGOCIO:
+- DMSTK HOUSES: espacios de experiencias creativas (taller + retail + comunidad)
+- Equipo: David/Dupo (director general), Christian (PM/operaciones), Cristina (legal), Miguel Marquez (contenido)
+- Hito critico: soft opening 1 sept 2026, espacio reformado mediados agosto
+- Piloto de validacion antes de GO/NO-GO con inversores
+
+REGLAS ABSOLUTAS:
+1. Solo espanol. Directo, profesional, sin rodeos, sin emojis
+2. Cada recomendacion: QUE hacer + QUIEN lo hace + PARA CUANDO
+3. Usa nombres reales del equipo, nunca "alguien deberia..."
+4. Prioriza por impacto en el soft opening de septiembre
+5. Si algo esta en peligro, dilo claro con datos (X tareas vencidas en area Y)
+6. Formato markdown: **negritas**, listas con -, headers con ##`;
 
 async function callGemini(context, userMessage) {
   const response = await fetch(GEMINI_URL, {
@@ -70,27 +88,77 @@ async function callGemini(context, userMessage) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
-      contents: [{ role: 'user', parts: [{ text: context + '\n\n---\n\n' + userMessage }] }],
-      generationConfig: { temperature: 0.3, maxOutputTokens: 1500 }
+      contents: [{ role: 'user', parts: [{ text: context + '\n\n---\nPREGUNTA: ' + userMessage }] }],
+      generationConfig: { temperature: 0.2, maxOutputTokens: 2000 }
     })
   });
-  if (!response.ok) throw new Error('API ' + response.status);
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err.error?.message || `Gemini API ${response.status}`);
+  }
   const data = await response.json();
-  return data.candidates?.[0]?.content?.parts?.[0]?.text || 'Sin respuesta';
+  return data.candidates?.[0]?.content?.parts?.[0]?.text || 'Sin respuesta del modelo';
 }
 
 function formatText(text, PALETTE) {
   if (!text) return null;
   return text.split('\n').map((line, i) => {
     let html = line.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-    if (line.trim().startsWith('#')) return <div key={i} style={{ fontSize: 13, fontWeight: 700, color: PALETTE.ink, marginTop: 8, marginBottom: 3 }} dangerouslySetInnerHTML={{ __html: html.replace(/^#+\s*/, '') }} />;
-    if (line.trim().startsWith('- ') || line.trim().startsWith('* ')) return <div key={i} style={{ fontSize: 11, color: PALETTE.soft, paddingLeft: 10, marginBottom: 1 }} dangerouslySetInnerHTML={{ __html: html.replace(/^[-*]\s*/, '· ') }} />;
-    if (line.trim() === '') return <div key={i} style={{ height: 4 }} />;
-    return <div key={i} style={{ fontSize: 11, color: PALETTE.ink, marginBottom: 1 }} dangerouslySetInnerHTML={{ __html: html }} />;
+    if (line.trim().startsWith('##')) return <div key={i} style={{ fontSize: 13, fontWeight: 700, color: PALETTE.ink, marginTop: 10, marginBottom: 4 }} dangerouslySetInnerHTML={{ __html: html.replace(/^#+\s*/, '') }} />;
+    if (line.trim().startsWith('#')) return <div key={i} style={{ fontSize: 14, fontWeight: 700, color: PALETTE.ink, marginTop: 12, marginBottom: 4 }} dangerouslySetInnerHTML={{ __html: html.replace(/^#+\s*/, '') }} />;
+    if (line.trim().startsWith('- ') || line.trim().startsWith('* ')) return <div key={i} style={{ fontSize: 11, color: PALETTE.soft, paddingLeft: 10, marginBottom: 2 }} dangerouslySetInnerHTML={{ __html: html.replace(/^[-*]\s*/, '· ') }} />;
+    if (line.trim() === '') return <div key={i} style={{ height: 6 }} />;
+    return <div key={i} style={{ fontSize: 11, color: PALETTE.ink, marginBottom: 2, lineHeight: 1.5 }} dangerouslySetInnerHTML={{ __html: html }} />;
   });
 }
 
-// Alertas estaticas (sin IA, se calculan al instante)
+// Briefing diario — se genera automaticamente si no hay uno de hoy
+async function getDailyBriefing(tasks, milestones) {
+  if (!isAuthenticated()) return null;
+
+  // Verificar si ya hay briefing de hoy
+  const today = new Date().toISOString().split('T')[0];
+  try {
+    const existing = await dbSelect('pm_briefings', `date=eq.${today}&select=*`);
+    if (existing?.length > 0) return existing[0];
+  } catch (e) {
+    // Tabla puede no existir aun
+    return null;
+  }
+
+  // Generar nuevo briefing
+  try {
+    const context = buildProjectContext(tasks, milestones);
+    const briefing = await callGemini(context,
+      'Genera el briefing diario del proyecto. Estructura:\n' +
+      '1. ESTADO GENERAL (2 lineas)\n' +
+      '2. LO QUE NECESITA ATENCION HOY (3-5 items concretos)\n' +
+      '3. RIESGOS ACTIVOS (que puede salir mal esta semana)\n' +
+      '4. RECOMENDACION DEL DIA (1 accion que mas impacto tendria)'
+    );
+
+    const overdue = tasks.filter(t => t.status !== 'Hecho' && t.endDate < today);
+
+    // Guardar en Supabase
+    try {
+      await dbInsert('pm_briefings', {
+        date: today,
+        summary: briefing,
+        task_count: tasks.length,
+        overdue_count: overdue.length,
+      });
+    } catch (e) {
+      // Si falla guardar, devolver el briefing igual
+    }
+
+    return { date: today, summary: briefing, task_count: tasks.length, overdue_count: overdue.length };
+  } catch (e) {
+    console.warn('[PM] Error generando briefing:', e.message);
+    return null;
+  }
+}
+
+// Alertas estaticas (sin IA)
 export function StaticAlerts({ tasks, milestones, PALETTE, onTaskClick }) {
   const today = new Date().toISOString().split('T')[0];
   const overdue = tasks.filter(t => t.status !== 'Hecho' && t.endDate < today && !t.deleted);
@@ -128,14 +196,57 @@ export function StaticAlerts({ tasks, milestones, PALETTE, onTaskClick }) {
   );
 }
 
-// PM flotante (ventana emergente)
+// Briefing diario (aparece en el dashboard)
+export function DailyBriefing({ tasks, milestones, PALETTE }) {
+  const [briefing, setBriefing] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const loaded = useRef(false);
+
+  useEffect(() => {
+    if (loaded.current || !tasks?.length) return;
+    loaded.current = true;
+
+    getDailyBriefing(tasks, milestones).then(b => {
+      setBriefing(b);
+      setLoading(false);
+    }).catch(() => setLoading(false));
+  }, [tasks, milestones]);
+
+  if (loading) return (
+    <div style={{ padding: '12px 16px', background: PALETTE.lagune + '08', borderRadius: 8, marginBottom: 14, border: '1px solid ' + PALETTE.lagune + '15' }}>
+      <div style={{ fontSize: 9, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.8px', color: PALETTE.lagune, fontFamily: 'var(--font-mono)' }}>
+        Generando briefing del dia...
+      </div>
+    </div>
+  );
+
+  if (!briefing?.summary) return null;
+
+  return (
+    <div style={{ padding: '12px 16px', background: PALETTE.lagune + '06', borderRadius: 8, marginBottom: 14, border: '1px solid ' + PALETTE.lagune + '12' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+        <div style={{ fontSize: 9, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.8px', color: PALETTE.lagune, fontFamily: 'var(--font-mono)' }}>
+          Briefing del dia — {briefing.date}
+        </div>
+        <div style={{ fontSize: 9, color: PALETTE.muted }}>{briefing.task_count} tareas | {briefing.overdue_count} vencidas</div>
+      </div>
+      <div style={{ maxHeight: 200, overflowY: 'auto' }}>
+        {formatText(briefing.summary, PALETTE)}
+      </div>
+    </div>
+  );
+}
+
+// PM flotante (chat)
 export default function PMAgent({ tasks, milestones, PALETTE, SERIF }) {
+  const { profile } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [analysis, setAnalysis] = useState(null);
   const [loading, setLoading] = useState(false);
   const [question, setQuestion] = useState('');
   const [conversation, setConversation] = useState([]);
   const [error, setError] = useState(null);
+  const chatEndRef = useRef(null);
 
   const context = buildProjectContext(tasks || [], milestones || {});
 
@@ -144,16 +255,15 @@ export default function PMAgent({ tasks, milestones, PALETTE, SERIF }) {
     setError(null);
     try {
       const result = await callGemini(context,
-        'Analiza el proyecto. Dame 3-5 alertas criticas. Para cada una:\n' +
-        '1. Que pasa exactamente (tarea, fecha, responsable)\n' +
-        '2. Que impacto tiene si no se resuelve\n' +
-        '3. Accion concreta para resolverlo (quien, que, cuando)\n' +
-        '4. Que debo lograr para que esta alerta desaparezca\n\n' +
-        'Empieza con 2 lineas de resumen del estado general.'
+        'Analiza el proyecto para ' + (profile?.display_name || 'el equipo') + '. Dame:\n' +
+        '1. Estado general en 2 lineas\n' +
+        '2. Las 3-5 cosas mas urgentes (con responsable y fecha)\n' +
+        '3. Riesgos que veo esta semana\n' +
+        '4. Mi recomendacion principal para hoy'
       );
       setAnalysis(result);
     } catch (err) {
-      setError('Error conectando con Gemini: ' + err.message);
+      setError('Error: ' + err.message);
     } finally {
       setLoading(false);
     }
@@ -172,12 +282,12 @@ export default function PMAgent({ tasks, milestones, PALETTE, SERIF }) {
       setConversation(prev => [...prev, { role: 'pm', text: 'Error: ' + err.message }]);
     } finally {
       setLoading(false);
+      setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
     }
   }
 
   return (
     <>
-      {/* Boton flotante */}
       <button
         onClick={() => { setIsOpen(!isOpen); if (!isOpen && !analysis) runAnalysis(); }}
         style={{
@@ -187,35 +297,32 @@ export default function PMAgent({ tasks, milestones, PALETTE, SERIF }) {
           cursor: 'pointer', boxShadow: '0 4px 16px rgba(0,0,0,0.2)',
           fontSize: 18, fontWeight: 700, fontFamily: SERIF,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          transition: 'all 0.2s'
         }}
         title="PM Inteligente"
       >
         {isOpen ? 'x' : 'PM'}
       </button>
 
-      {/* Ventana flotante */}
       {isOpen && (
         <div style={{
           position: 'fixed', bottom: 80, right: 24, zIndex: 999,
-          width: 420, maxHeight: '70vh',
+          width: 440, maxHeight: '75vh',
           background: PALETTE.bone, borderRadius: 12,
           border: '1px solid ' + PALETTE.faint,
           boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
           display: 'flex', flexDirection: 'column', overflow: 'hidden'
         }}>
-          {/* Header */}
           <div style={{ padding: '12px 16px', borderBottom: '1px solid ' + PALETTE.faint, background: PALETTE.warm, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <div style={{ width: 8, height: 8, borderRadius: '50%', background: loading ? PALETTE.mostaza : PALETTE.menthe, animation: loading ? 'pulse 1.5s infinite' : 'none' }} />
+              <div style={{ width: 8, height: 8, borderRadius: '50%', background: loading ? PALETTE.mostaza : PALETTE.menthe }} />
               <span style={{ fontSize: 12, fontWeight: 700, color: PALETTE.ink }}>PM Inteligente</span>
+              <span style={{ fontSize: 9, color: PALETTE.muted }}>Gemini</span>
             </div>
             <button onClick={runAnalysis} disabled={loading} style={{ fontSize: 10, padding: '3px 10px', borderRadius: 4, border: '1px solid ' + PALETTE.faint, background: 'transparent', cursor: loading ? 'wait' : 'pointer', color: PALETTE.lagune, fontWeight: 600 }}>
               {loading ? 'Analizando...' : 'Actualizar'}
             </button>
           </div>
 
-          {/* Content - scrollable */}
           <div style={{ flex: 1, overflowY: 'auto', padding: '12px 16px' }}>
             {error && <div style={{ fontSize: 11, color: PALETTE.danger, marginBottom: 8, padding: '6px 8px', background: PALETTE.danger + '08', borderRadius: 4 }}>{error}</div>}
 
@@ -223,30 +330,27 @@ export default function PMAgent({ tasks, milestones, PALETTE, SERIF }) {
               <div style={{ textAlign: 'center', padding: 24, color: PALETTE.muted, fontSize: 12 }}>Analizando {tasks?.length || 0} tareas...</div>
             )}
 
-            {analysis && (
-              <div style={{ marginBottom: 12 }}>{formatText(analysis, PALETTE)}</div>
-            )}
+            {analysis && <div style={{ marginBottom: 12 }}>{formatText(analysis, PALETTE)}</div>}
 
             {conversation.map((msg, i) => (
               <div key={i} style={{ marginBottom: 8 }}>
                 <div style={{ fontSize: 9, fontWeight: 600, textTransform: 'uppercase', color: msg.role === 'user' ? PALETTE.lagune : PALETTE.mostaza, fontFamily: 'var(--font-mono)', marginBottom: 2 }}>
-                  {msg.role === 'user' ? 'Tu' : 'PM'}
+                  {msg.role === 'user' ? (profile?.display_name || 'Tu') : 'PM'}
                 </div>
                 <div style={{ padding: '6px 8px', background: msg.role === 'user' ? PALETTE.lagune + '06' : PALETTE.bone, borderRadius: 6, borderLeft: '2px solid ' + (msg.role === 'user' ? PALETTE.lagune : PALETTE.mostaza) }}>
                   {msg.role === 'user' ? <div style={{ fontSize: 11, color: PALETTE.ink }}>{msg.text}</div> : formatText(msg.text, PALETTE)}
                 </div>
               </div>
             ))}
+            <div ref={chatEndRef} />
           </div>
 
-          {/* Quick questions */}
           <div style={{ padding: '6px 16px', borderTop: '1px solid ' + PALETTE.faint + '40', display: 'flex', gap: 4, flexWrap: 'wrap', flexShrink: 0 }}>
-            {['Priorizar esta semana', 'Riesgos del piloto', 'Resumen para el board', 'Tareas bloqueantes'].map((q, i) => (
+            {['Que priorizo hoy?', 'Estado del piloto', 'Riesgos esta semana', 'Resumen para Dupo'].map((q, i) => (
               <button key={i} onClick={() => { setQuestion(q); }} style={{ fontSize: 9, padding: '2px 6px', borderRadius: 3, border: '1px solid ' + PALETTE.faint + '50', background: 'transparent', cursor: 'pointer', color: PALETTE.muted }}>{q}</button>
             ))}
           </div>
 
-          {/* Input */}
           <div style={{ padding: '8px 16px 12px', borderTop: '1px solid ' + PALETTE.faint + '40', display: 'flex', gap: 6, flexShrink: 0 }}>
             <input
               value={question}
