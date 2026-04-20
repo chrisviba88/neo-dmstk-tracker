@@ -2085,7 +2085,9 @@ export default function App() {
                 {recentNotes.length > 0 && <span style={{ position: "absolute", top: -4, right: -4, background: PALETTE.nectarine, color: "#fff", fontSize: 9, fontWeight: 700, minWidth: 16, height: 16, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 3px", pointerEvents: "none" }}>{recentNotes.length}</span>}
 
                 {showNotesList && (
-                  <div style={{ position: "absolute", top: "100%", right: 0, marginTop: 4, background: PALETTE.bone, borderRadius: 10, border: "1px solid " + PALETTE.faint, boxShadow: "0 8px 32px rgba(0,0,0,0.12)", zIndex: 200, width: 320, maxHeight: 360, overflowY: "auto" }}>
+                  <>
+                  <div onClick={function() { setShowNotesList(false); }} style={{ position: "fixed", inset: 0, zIndex: 199 }} />
+                  <div style={{ position: "fixed", top: 60, right: 16, background: PALETTE.bone, borderRadius: 12, border: "1px solid " + PALETTE.faint, boxShadow: "0 12px 40px rgba(0,0,0,0.15)", zIndex: 200, width: Math.min(360, window.innerWidth - 32), maxHeight: "70vh", overflowY: "auto" }}>
                     <div style={{ padding: "10px 14px", borderBottom: "1px solid " + PALETTE.faint, fontSize: 11, fontWeight: 600, color: PALETTE.lagune, textTransform: "uppercase", letterSpacing: ".5px" }}>
                       Notas recientes
                     </div>
@@ -2107,6 +2109,7 @@ export default function App() {
                       );
                     })}
                   </div>
+                  </>
                 )}
               </div>
           {canEdit && <button onClick={function() { setShowHistory(true); }} style={{ display: "flex", alignItems: "center", padding: 7, borderRadius: 6, border: "0.5px solid " + PALETTE.faint, background: "transparent", cursor: "pointer", color: PALETTE.muted }} title="Historial de versiones"><History size={14} /></button>}
