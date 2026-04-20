@@ -1213,18 +1213,31 @@ function SettingsPanel({ owners, addOwner, mergeOwners, onClose, isAdmin }) {
 
   var appUrl = window.location.origin;
 
-  function copyInviteLink() {
-    var link = appUrl;
-    var msg = "Te invito al tracker de DMSTK HOUSES.\n\n1. Abre: " + link + "\n2. Click en 'Crear cuenta'\n3. Usa tu email y elige una contrasena\n4. Listo, podras ver el proyecto";
-    if (inviteEmail.trim()) {
-      msg = "Hola! " + msg;
-    }
-    navigator.clipboard.writeText(msg).then(function() {
-      setInviteMsg("Link copiado al clipboard");
+  function sendInvite() {
+    if (!inviteEmail.trim() || !inviteEmail.includes('@')) {
+      setInviteMsg("Introduce un email valido");
       setTimeout(function() { setInviteMsg(""); }, 3000);
-    }).catch(function() {
-      setInviteMsg("Error al copiar");
-    });
+      return;
+    }
+
+    var senderName = profiles.find(function(p) { return p.role === 'admin'; })?.display_name || 'El equipo';
+    var subject = encodeURIComponent("Te invito al tracker de DMSTK HOUSES");
+    var body = encodeURIComponent(
+      "Hola,\n\n" +
+      senderName + " te invita a unirte al tracker de proyectos de DMSTK HOUSES.\n\n" +
+      "Es la herramienta donde gestionamos todo el proyecto. Sigue estos pasos para acceder:\n\n" +
+      "1. Abre este enlace: " + appUrl + "\n" +
+      "2. Haz click en \"Crear cuenta\"\n" +
+      "3. Usa tu email (" + inviteEmail.trim() + ") y elige una contrasena\n" +
+      "4. Listo, podras ver el estado del proyecto, dejar notas y comentarios\n\n" +
+      "Si tienes dudas, responde a este correo.\n\n" +
+      "— " + senderName + "\nDMSTK HOUSES"
+    );
+
+    window.open("mailto:" + inviteEmail.trim() + "?subject=" + subject + "&body=" + body, '_self');
+    setInviteMsg("Email abierto — envialo desde tu correo");
+    setInviteEmail("");
+    setTimeout(function() { setInviteMsg(""); }, 5000);
   }
   var [profiles, setProfiles] = useState([]);
   var [loadingProfiles, setLoadingProfiles] = useState(false);
@@ -1292,14 +1305,17 @@ function SettingsPanel({ owners, addOwner, mergeOwners, onClose, isAdmin }) {
           {isAdmin && (
             <div style={{ marginBottom: 24 }}>
               <div style={{ fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: ".8px", color: PALETTE.lagune, fontFamily: "var(--font-mono)", marginBottom: 10 }}>Invitar al equipo</div>
-              <div style={{ fontSize: 11, color: PALETTE.soft, marginBottom: 8 }}>Genera un mensaje con las instrucciones para unirse. Copialo y envialo por WhatsApp, email o Slack.</div>
+              <div style={{ fontSize: 11, color: PALETTE.soft, marginBottom: 8 }}>Introduce el email de la persona y se abrira tu correo con la invitacion lista para enviar.</div>
               <div style={{ display: "flex", gap: 6 }}>
-                <input value={inviteEmail} onChange={function(e) { setInviteEmail(e.target.value); }} placeholder="Email del invitado (opcional)"
+                <input value={inviteEmail} onChange={function(e) { setInviteEmail(e.target.value); }}
+                  onKeyDown={function(e) { if (e.key === 'Enter') sendInvite(); }}
+                  placeholder="email@ejemplo.com"
+                  type="email"
                   style={{ flex: 1, fontSize: 12, padding: "8px 12px", borderRadius: 8, border: "1px solid " + PALETTE.faint }} />
-                <button onClick={copyInviteLink}
-                  style={{ padding: "8px 14px", borderRadius: 8, fontSize: 12, fontWeight: 500, background: PALETTE.lagune, color: "#fff", border: "none", cursor: "pointer", whiteSpace: "nowrap" }}>Copiar invitacion</button>
+                <button onClick={sendInvite}
+                  style={{ padding: "8px 14px", borderRadius: 8, fontSize: 12, fontWeight: 500, background: PALETTE.lagune, color: "#fff", border: "none", cursor: "pointer", whiteSpace: "nowrap" }}>Enviar invitacion</button>
               </div>
-              {inviteMsg && <div style={{ fontSize: 11, color: PALETTE.menthe, marginTop: 6 }}>{inviteMsg}</div>}
+              {inviteMsg && <div style={{ fontSize: 11, color: inviteMsg.includes('Error') || inviteMsg.includes('valido') ? PALETTE.danger : PALETTE.menthe, marginTop: 6 }}>{inviteMsg}</div>}
               <div style={{ fontSize: 10, color: PALETTE.muted, marginTop: 6 }}>Los nuevos usuarios entran como Viewer. Puedes cambiar su rol arriba.</div>
             </div>
           )}
