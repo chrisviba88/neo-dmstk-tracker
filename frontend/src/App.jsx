@@ -2077,7 +2077,7 @@ export default function App() {
         <div style={{ display: "flex", gap: 6 }}>
           {/* Notificaciones de notas */}
               <div style={{ position: "relative" }}>
-                <button onClick={function() { if (!showNotesList) { setShowNotesList(true); } else { setShowNotesList(false); setRecentNotes([]); } }}
+                <button onClick={function() { if (!showNotesList) { setShowNotesList(true); setRecentNotes([]); } else { setShowNotesList(false); } }}
                   style={{ display: "flex", alignItems: "center", padding: 7, borderRadius: 6, border: "0.5px solid " + (recentNotes.length > 0 ? PALETTE.lagune + "40" : PALETTE.faint), background: recentNotes.length > 0 ? PALETTE.lagune + "08" : "transparent", cursor: "pointer", color: recentNotes.length > 0 ? PALETTE.lagune : PALETTE.muted }}
                   title={recentNotes.length + " notas recientes"}>
                   <MessageCircle size={14} />
