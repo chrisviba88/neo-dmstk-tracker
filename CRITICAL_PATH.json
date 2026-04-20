@@ -1,0 +1,583 @@
+{
+  "metadata": {
+    "generado": "2026-04-13",
+    "analista": "PM Senior con 15+ años experiencia",
+    "objetivo": "Identificar ruta crítica y gates del proyecto NEO DMSTK",
+    "metodo": "Critical Path Method (CPM) + Critical Chain Project Management (CCPM)",
+    "nota": "Análisis basado en 109 tareas actuales de E1. E2-E5 requieren roadmap detallado."
+  },
+  "resumen_ejecutivo": {
+    "total_rutas_criticas": 3,
+    "total_gates": 5,
+    "total_hitos": 15,
+    "duracion_proyecto_e1": "174 días (25 semanas)",
+    "fecha_inicio": "2026-04-10",
+    "fecha_fin_objetivo": "2026-10-01",
+    "margen_total_proyecto": "0 días",
+    "estado": "CRITICAL - Sin buffer. Cualquier retraso impacta fecha final."
+  },
+  "rutas_criticas": [
+    {
+      "id": "CP1",
+      "nombre": "Ruta Crítica Principal: Fundación → Piloto → GO/NO-GO → Obra → Apertura",
+      "duracion_total_dias": 174,
+      "margen": 0,
+      "secuencia": [
+        {
+          "id": "t30",
+          "name": "Confirmar técnica + profesor/a",
+          "inicio": "2026-04-10",
+          "fin": "2026-04-25",
+          "duracion": 15,
+          "margen_libre": 0,
+          "es_bottleneck": true,
+          "nota": "BOTTLENECK CRÍTICO - Quedan 12 días. Sin profesor, todo se paraliza."
+        },
+        {
+          "id": "t11",
+          "name": "Firma contrato profesor/a",
+          "inicio": "2026-05-03",
+          "fin": "2026-05-05",
+          "duracion": 2,
+          "margen_libre": 0,
+          "dependencias": ["t30", "t08", "t10"]
+        },
+        {
+          "id": "t31",
+          "name": "Briefing profesor/a",
+          "inicio": "2026-05-06",
+          "fin": "2026-05-08",
+          "duracion": 2,
+          "margen_libre": 0,
+          "dependencias": ["t11", "t30"]
+        },
+        {
+          "id": "t32",
+          "name": "Propuesta 2-3 proyectos",
+          "inicio": "2026-05-09",
+          "fin": "2026-05-11",
+          "duracion": 2,
+          "margen_libre": 0,
+          "dependencias": ["t31"]
+        },
+        {
+          "id": "t33",
+          "name": "Selección proyecto final",
+          "inicio": "2026-05-12",
+          "fin": "2026-05-14",
+          "duracion": 2,
+          "margen_libre": 0,
+          "dependencias": ["t32"]
+        },
+        {
+          "id": "t34",
+          "name": "Prototipo MVP (novato cronometrado)",
+          "inicio": "2026-05-15",
+          "fin": "2026-05-21",
+          "duracion": 6,
+          "margen_libre": 0,
+          "dependencias": ["t33"]
+        },
+        {
+          "id": "t38",
+          "name": "Test validación",
+          "inicio": "2026-05-22",
+          "fin": "2026-05-22",
+          "duracion": 1,
+          "margen_libre": 0,
+          "es_hito": true,
+          "dependencias": ["t34", "t37"]
+        },
+        {
+          "id": "t39",
+          "name": "Evaluar resultados test",
+          "inicio": "2026-05-23",
+          "fin": "2026-05-24",
+          "duracion": 1,
+          "margen_libre": 0,
+          "dependencias": ["t38"]
+        },
+        {
+          "id": "t41",
+          "name": "Guiones todos módulos (~50 piezas)",
+          "inicio": "2026-05-27",
+          "fin": "2026-06-05",
+          "duracion": 9,
+          "margen_libre": 0,
+          "dependencias": ["t39"]
+        },
+        {
+          "id": "t42",
+          "name": "Grabación (3 días de set)",
+          "inicio": "2026-06-09",
+          "fin": "2026-06-11",
+          "duracion": 3,
+          "margen_libre": 0,
+          "es_hito": true,
+          "es_bottleneck": true,
+          "nota": "BOTTLENECK CRÍTICO - 3 días NO REPETIBLES. No se puede fallar.",
+          "dependencias": ["t41"]
+        },
+        {
+          "id": "t43",
+          "name": "Edición ~50 módulos",
+          "inicio": "2026-06-18",
+          "fin": "2026-07-08",
+          "duracion": 20,
+          "margen_libre": 0,
+          "dependencias": ["t42"]
+        },
+        {
+          "id": "t44",
+          "name": "Subtítulos ES+EN + espejo zurdos",
+          "inicio": "2026-06-25",
+          "fin": "2026-07-05",
+          "duracion": 10,
+          "margen_libre": 0,
+          "dependencias": ["t43"]
+        },
+        {
+          "id": "t45",
+          "name": "Vídeos en plataforma",
+          "inicio": "2026-07-09",
+          "fin": "2026-07-16",
+          "duracion": 7,
+          "margen_libre": 0,
+          "dependencias": ["t44"]
+        },
+        {
+          "id": "t46",
+          "name": "QRs definitivos para kits",
+          "inicio": "2026-07-17",
+          "fin": "2026-07-22",
+          "duracion": 5,
+          "margen_libre": 0,
+          "dependencias": ["t45"]
+        }
+      ],
+      "paralela_con": "CP2 (Piloto) y CP3 (Obra)"
+    },
+    {
+      "id": "CP2",
+      "nombre": "Ruta Crítica Paralela: Piloto & Validación → Informe GO/NO-GO",
+      "duracion_total_dias": 36,
+      "inicio": "2026-05-25",
+      "fin": "2026-06-24",
+      "margen": 0,
+      "secuencia": [
+        {
+          "id": "t98",
+          "name": "Piloto arranca",
+          "inicio": "2026-05-25",
+          "fin": "2026-05-25",
+          "duracion": 1,
+          "margen_libre": 0,
+          "es_hito": true,
+          "es_bottleneck": true,
+          "nota": "BOTTLENECK CRÍTICO - Fecha ajustada +6 días. Depende de t55 (kits), t91b (facilitador), t25 (manual).",
+          "dependencias": ["t55", "t91b", "t25"]
+        },
+        {
+          "id": "t99",
+          "name": "Sesiones cortas (8x2/sem)",
+          "inicio": "2026-05-25",
+          "fin": "2026-06-19",
+          "duracion": 25,
+          "margen_libre": 0,
+          "dependencias": ["t98"]
+        },
+        {
+          "id": "t100",
+          "name": "Programa largo (4x1/sem)",
+          "inicio": "2026-05-25",
+          "fin": "2026-06-19",
+          "duracion": 25,
+          "margen_libre": 0,
+          "dependencias": ["t98"]
+        },
+        {
+          "id": "t101",
+          "name": "Analizar datos piloto",
+          "inicio": "2026-06-20",
+          "fin": "2026-06-23",
+          "duracion": 3,
+          "margen_libre": 0,
+          "dependencias": ["t99", "t100"]
+        },
+        {
+          "id": "t102",
+          "name": "Informe GO/NO-GO",
+          "inicio": "2026-06-24",
+          "fin": "2026-06-24",
+          "duracion": 1,
+          "margen_libre": 0,
+          "es_hito": true,
+          "es_bottleneck": true,
+          "nota": "BOTTLENECK CRÍTICO - Decisión binaria. t06 debe moverse a 27 junio para esperar este informe.",
+          "dependencias": ["t101"]
+        }
+      ]
+    },
+    {
+      "id": "CP3",
+      "nombre": "Ruta Crítica Paralela: GO/NO-GO → Obra → Soft Opening",
+      "duracion_total_dias": 62,
+      "inicio": "2026-06-27",
+      "fin": "2026-09-01",
+      "margen": 5,
+      "nota": "MARGEN CRÍTICO: Solo 5 días entre fin obra (27 ago) y soft opening (1 sep).",
+      "secuencia": [
+        {
+          "id": "t06",
+          "name": "GO/NO-GO con board",
+          "inicio": "2026-06-27",
+          "fin": "2026-06-27",
+          "duracion": 1,
+          "margen_libre": 0,
+          "es_hito": true,
+          "es_gate": true,
+          "es_bottleneck": true,
+          "nota": "GATE CRÍTICO - Decisión binaria. FECHA AJUSTADA a 27 jun (era 20 jun) para esperar informe t102.",
+          "dependencias": ["t05", "t102"]
+        },
+        {
+          "id": "t07",
+          "name": "Activar fase escala",
+          "inicio": "2026-06-28",
+          "fin": "2026-07-02",
+          "duracion": 4,
+          "margen_libre": 0,
+          "dependencias": ["t06"]
+        },
+        {
+          "id": "t83",
+          "name": "Inicio reforma",
+          "inicio": "2026-07-02",
+          "fin": "2026-07-02",
+          "duracion": 1,
+          "margen_libre": 0,
+          "es_hito": true,
+          "es_bottleneck": true,
+          "nota": "BOTTLENECK CRÍTICO - Fecha INMOVIBLE ajustada a 2 jul. Cada semana de retraso = -1 sem apertura.",
+          "dependencias": ["t06", "t17", "t18"]
+        },
+        {
+          "id": "t84",
+          "name": "Obra y acondicionamiento (8-10 sem)",
+          "inicio": "2026-07-02",
+          "fin": "2026-08-27",
+          "duracion": 56,
+          "margen_libre": 0,
+          "es_bottleneck": true,
+          "nota": "BOTTLENECK CRÍTICO - 8 semanas exactas. SIN BUFFER. Empresa DEBE trabajar EN AGOSTO.",
+          "dependencias": ["t83"]
+        },
+        {
+          "id": "t89a",
+          "name": "Check final espacio",
+          "inicio": "2026-08-28",
+          "fin": "2026-08-31",
+          "duracion": 3,
+          "margen_libre": 0,
+          "es_hito": true,
+          "dependencias": ["t84", "t85", "t87a"]
+        },
+        {
+          "id": "t92",
+          "name": "Soft Opening E1",
+          "inicio": "2026-09-01",
+          "fin": "2026-09-01",
+          "duracion": 1,
+          "margen_libre": 0,
+          "es_hito": true,
+          "es_gate": true,
+          "nota": "HITO MAYOR - Apertura al público. FECHA COMERCIAL INMOVIBLE.",
+          "dependencias": ["t89a"]
+        }
+      ]
+    }
+  ],
+  "gates_go_no_go": [
+    {
+      "id": "GATE-1",
+      "nombre": "Test Validación Proyecto",
+      "tarea": "t38",
+      "fecha": "2026-05-22",
+      "tipo": "Técnico",
+      "criterios": [
+        "80%+ completa MVP",
+        "Satisfacción ≥8/10",
+        "MVP se ve terminado y bello"
+      ],
+      "impacto_no_go": "Simplificar proyecto y repetir test. +2 semanas. Grabación se retrasa. GO/NO-GO final en riesgo.",
+      "probabilidad_no_go": "MEDIA (30%)",
+      "mitigacion": "Cronometrar prototipo con NOVATO real, no con profesora."
+    },
+    {
+      "id": "GATE-2",
+      "nombre": "Grabación Contenido",
+      "tarea": "t42",
+      "fecha": "2026-06-09 a 2026-06-11",
+      "tipo": "Producción",
+      "criterios": [
+        "Guiones aprobados por profesora",
+        "Estudio reservado y confirmado",
+        "Equipo técnico disponible",
+        "Profesora disponible 3 días completos"
+      ],
+      "impacto_no_go": "NO SE PUEDE REPETIR. Contenido es base de toda la experiencia. Sin contenido, NO HAY PILOTO válido.",
+      "probabilidad_no_go": "BAJA (10%)",
+      "mitigacion": "Reservar estudio YA (t40). Ensayos previos. Backup day por si falla técnica."
+    },
+    {
+      "id": "GATE-3",
+      "nombre": "Piloto Arranca",
+      "tarea": "t98",
+      "fecha": "2026-05-25",
+      "tipo": "Operacional",
+      "criterios": [
+        "Kits piloto listos (20-30 uds)",
+        "Facilitador certificado",
+        "Manual operativo v0 completo",
+        "Espacio Monteagudo preparado",
+        "Participantes reclutados"
+      ],
+      "impacto_no_go": "Piloto se retrasa. Informe GO/NO-GO tarde. Decisión board se retrasa. Obra se retrasa. Cascada total.",
+      "probabilidad_no_go": "MEDIA-ALTA (40%)",
+      "mitigacion": "Seguimiento diario de t55 (kits), t91b (facilitador), t25 (manual). Iniciar preparación Monteagudo AHORA."
+    },
+    {
+      "id": "GATE-4",
+      "nombre": "GO/NO-GO con Board",
+      "tarea": "t06",
+      "fecha": "2026-06-27",
+      "tipo": "Estratégico",
+      "criterios": [
+        "NPS ≥70",
+        "Proyecto completado ≥90%",
+        "Recomendaría ≥9/10",
+        "Volverías ≥80%",
+        "Tiempo en flow ≥50%"
+      ],
+      "impacto_no_go": "PROYECTO SE DETIENE o SE REPLANTEA. 5 meses perdidos. Costos hundidos. Reputación en riesgo.",
+      "probabilidad_no_go": "MEDIA (25%)",
+      "mitigacion": "Documentar criterios AHORA (t95). Comunicar a board ANTES del piloto. Sin sorpresas.",
+      "nota_critica": "Este es el gate MÁS CRÍTICO del proyecto. Todo depende de esta decisión."
+    },
+    {
+      "id": "GATE-5",
+      "nombre": "Inicio Reforma",
+      "tarea": "t83",
+      "fecha": "2026-07-02",
+      "tipo": "Construcción",
+      "criterios": [
+        "GO/NO-GO aprobado (t06)",
+        "Contrato empresa reformas firmado (t17)",
+        "Licencia de obra aprobada (t18)",
+        "Proyecto técnico completo (t53)",
+        "Empresa confirma disponibilidad AGOSTO"
+      ],
+      "impacto_no_go": "Obra no arranca. Soft opening 1 sep IMPOSIBLE. Campaña marketing en vacío. Pérdida credibilidad.",
+      "probabilidad_no_go": "MEDIA (30%)",
+      "mitigacion": "Licencias DEBEN iniciarse ANTES julio (constraint agosto). Empresa reformas DEBE confirmar agosto disponible.",
+      "nota_critica": "Cada semana de retraso en inicio = -1 semana en apertura."
+    }
+  ],
+  "hitos_criticos": [
+    {
+      "id": "t38",
+      "nombre": "Test validación",
+      "fecha": "2026-05-22",
+      "tipo": "Gate",
+      "impacto": "ALTO",
+      "siguiente_dependiente": "t39"
+    },
+    {
+      "id": "t42",
+      "nombre": "Grabación (3 días)",
+      "fecha": "2026-06-09 a 2026-06-11",
+      "tipo": "Gate",
+      "impacto": "CRÍTICO",
+      "siguiente_dependiente": "t43"
+    },
+    {
+      "id": "t55",
+      "nombre": "Kits piloto",
+      "fecha": "2026-05-24",
+      "tipo": "Hito",
+      "impacto": "CRÍTICO",
+      "siguiente_dependiente": "t98"
+    },
+    {
+      "id": "t73",
+      "nombre": "Identidad visual",
+      "fecha": "2026-05-30",
+      "tipo": "Hito",
+      "impacto": "ALTO",
+      "siguiente_dependiente": ["t57", "t59", "t74", "t75", "t87a"]
+    },
+    {
+      "id": "t91b",
+      "nombre": "Certificación facilitador",
+      "fecha": "2026-05-17",
+      "tipo": "Hito",
+      "impacto": "CRÍTICO",
+      "siguiente_dependiente": "t98"
+    },
+    {
+      "id": "t98",
+      "nombre": "Piloto arranca",
+      "fecha": "2026-05-25",
+      "tipo": "Gate",
+      "impacto": "CRÍTICO",
+      "siguiente_dependiente": ["t99", "t100"]
+    },
+    {
+      "id": "t102",
+      "nombre": "Informe GO/NO-GO",
+      "fecha": "2026-06-24",
+      "tipo": "Gate",
+      "impacto": "CRÍTICO",
+      "siguiente_dependiente": "t06"
+    },
+    {
+      "id": "t06",
+      "nombre": "GO/NO-GO con board",
+      "fecha": "2026-06-27",
+      "tipo": "Gate MAYOR",
+      "impacto": "CRÍTICO",
+      "siguiente_dependiente": ["t07", "t17", "t83"]
+    },
+    {
+      "id": "t83",
+      "nombre": "Inicio reforma",
+      "fecha": "2026-07-02",
+      "tipo": "Gate",
+      "impacto": "CRÍTICO",
+      "siguiente_dependiente": "t84"
+    },
+    {
+      "id": "t89a",
+      "nombre": "Check final espacio",
+      "fecha": "2026-08-31",
+      "tipo": "Hito",
+      "impacto": "ALTO",
+      "siguiente_dependiente": "t92"
+    },
+    {
+      "id": "t92",
+      "nombre": "Soft Opening E1",
+      "fecha": "2026-09-01",
+      "tipo": "Hito MAYOR",
+      "impacto": "CRÍTICO",
+      "siguiente_dependiente": "t80"
+    },
+    {
+      "id": "t116",
+      "nombre": "Test stack producción",
+      "fecha": "2026-08-28",
+      "tipo": "Hito",
+      "impacto": "ALTO",
+      "siguiente_dependiente": "t92"
+    },
+    {
+      "id": "t80",
+      "nombre": "Grand Opening",
+      "fecha": "2026-10-01",
+      "tipo": "Hito FINAL",
+      "impacto": "ALTO",
+      "siguiente_dependiente": null
+    }
+  ],
+  "bottlenecks_identificados": [
+    {
+      "id": "BN-1",
+      "tarea": "t30",
+      "nombre": "Confirmar técnica + profesor/a",
+      "razon": "Bloquea todo el contenido. Sin profesor, no hay proyecto, no hay test, no hay grabación.",
+      "impacto": "CRÍTICO",
+      "tareas_bloqueadas": 25,
+      "solucion": "EJECUTAR INMEDIATAMENTE. Quedan 12 días para deadline 25 abril."
+    },
+    {
+      "id": "BN-2",
+      "tarea": "t42",
+      "nombre": "Grabación (3 días)",
+      "razon": "3 días NO REPETIBLES. Profesora disponible solo estas fechas. Estudio reservado.",
+      "impacto": "CRÍTICO",
+      "tareas_bloqueadas": 15,
+      "solucion": "Ensayos previos. Backup day. Equipo técnico redundante."
+    },
+    {
+      "id": "BN-3",
+      "tarea": "t06",
+      "nombre": "GO/NO-GO con board",
+      "razon": "Decisión binaria. SI = continuar. NO = detener o replantearse todo.",
+      "impacto": "CRÍTICO",
+      "tareas_bloqueadas": 50+,
+      "solucion": "Documentar criterios (t95). Comunicar a board ANTES del piloto."
+    },
+    {
+      "id": "BN-4",
+      "tarea": "t83",
+      "nombre": "Inicio reforma",
+      "razon": "Fecha INMOVIBLE. Cada semana de retraso = -1 semana apertura.",
+      "impacto": "CRÍTICO",
+      "tareas_bloqueadas": 8,
+      "solucion": "Licencias ANTES julio. Empresa confirmada que trabaja agosto."
+    },
+    {
+      "id": "BN-5",
+      "tarea": "t84",
+      "nombre": "Obra y acondicionamiento",
+      "razon": "8 semanas SIN BUFFER. Debe incluir agosto (mes muerto en España).",
+      "impacto": "CRÍTICO",
+      "tareas_bloqueadas": 5,
+      "solucion": "Empresa QUE TRABAJE AGOSTO. Seguimiento semanal. Penalizaciones por retraso."
+    },
+    {
+      "id": "BN-6",
+      "tarea": "t73",
+      "nombre": "Identidad visual final",
+      "razon": "5+ tareas dependen de ella. Sin identidad, packaging, web, social media bloqueados.",
+      "impacto": "ALTO",
+      "tareas_bloqueadas": 5,
+      "solucion": "Monitorear semanalmente. Estudio tiene buffer 7 días, aprovechar."
+    }
+  ],
+  "tareas_con_margen_cero": [
+    "t30", "t11", "t31", "t32", "t33", "t34", "t38", "t39", "t41", "t42", "t43", "t44", "t45", "t46",
+    "t98", "t99", "t100", "t101", "t102", "t06", "t07", "t83", "t84", "t89a", "t92"
+  ],
+  "conflictos_dependencias": [
+    {
+      "tipo": "TEMPORAL",
+      "descripcion": "t06 (GO/NO-GO) programado ANTES de t102 (Informe)",
+      "tareas": ["t06", "t102"],
+      "solucion": "Mover t06 de 20 jun a 27 jun",
+      "implementado": "SÍ en análisis"
+    }
+  ],
+  "recomendaciones": [
+    {
+      "prioridad": "P0",
+      "accion": "MONITOREAR DIARIAMENTE t30, t42, t06, t83, t84",
+      "razon": "Bottlenecks críticos. Cualquier retraso = cascada total."
+    },
+    {
+      "prioridad": "P0",
+      "accion": "AÑADIR buffers recuperación post-gates",
+      "razon": "Si gate falla (ej. test validación NO-GO), necesitamos días para ajustar."
+    },
+    {
+      "prioridad": "P1",
+      "accion": "CREAR tareas seguimiento semanal para licencias (t13, t14, t18)",
+      "razon": "Constraint agosto. Sin seguimiento activo, pueden paralizarse."
+    },
+    {
+      "prioridad": "P1",
+      "accion": "ANTICIPAR búsqueda E2-E5 a JUNIO (paralelo con obra E1)",
+      "razon": "Objetivo 5 espacios requiere ejecución paralela desde junio."
+    }
+  ]
+}

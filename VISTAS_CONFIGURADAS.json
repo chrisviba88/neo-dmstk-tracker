@@ -1,0 +1,579 @@
+{
+  "metadata": {
+    "generado": "2026-04-13",
+    "version": "1.0",
+    "autor": "PM Senior Monday.com - 15+ años experiencia",
+    "plataforma": "Monday.com",
+    "total_vistas": 7,
+    "notas": "Vistas diseñadas para gestión profesional estilo Monday.com. Configuración completa con filtros, agrupaciones, ordenamiento y columnas visibles."
+  },
+  "vistas": [
+    {
+      "id": "vista-01",
+      "nombre": "Roadmap Maestro por Proyecto",
+      "descripcion": "Vista principal para visualizar todas las tareas organizadas por jerarquía de proyectos, ordenadas cronológicamente",
+      "tipo": "Board",
+      "agrupacion": {
+        "campo": "project",
+        "orden": "asc",
+        "expandir_por_defecto": true
+      },
+      "ordenamiento": [
+        {
+          "campo": "startDate",
+          "direccion": "asc"
+        },
+        {
+          "campo": "priority",
+          "direccion": "desc"
+        }
+      ],
+      "filtros": [
+        {
+          "campo": "priority",
+          "operador": "in",
+          "valores": ["P0 (Crítica)", "P1 (Alta)"]
+        },
+        {
+          "campo": "status",
+          "operador": "not_equals",
+          "valor": "Hecho"
+        }
+      ],
+      "columnas_visibles": [
+        "name",
+        "project",
+        "ws",
+        "status",
+        "priority",
+        "startDate",
+        "endDate",
+        "owner",
+        "progress",
+        "risk",
+        "isMilestone",
+        "isGate"
+      ],
+      "columnas_ocultas": [
+        "team",
+        "deps",
+        "blocks",
+        "hashtags",
+        "notes",
+        "estimatedHours",
+        "budget"
+      ],
+      "colores": {
+        "por_prioridad": true,
+        "esquema": "priority_colors"
+      },
+      "uso_recomendado": "Vista estratégica para reuniones de planificación y seguimiento general del proyecto. Ideal para presentar roadmap a stakeholders."
+    },
+    {
+      "id": "vista-02",
+      "nombre": "Ejecución por Área (Workstream)",
+      "descripcion": "Vista operativa diaria para equipos, organizada por área de trabajo con foco en urgencia",
+      "tipo": "Board",
+      "agrupacion": {
+        "campo": "ws",
+        "orden": "asc",
+        "expandir_por_defecto": true
+      },
+      "ordenamiento": [
+        {
+          "campo": "urgency",
+          "direccion": "asc",
+          "orden_custom": ["Inmediata", "Esta semana", "Este mes", "Siguiente mes"]
+        },
+        {
+          "campo": "priority",
+          "direccion": "desc"
+        }
+      ],
+      "filtros": [
+        {
+          "campo": "status",
+          "operador": "in",
+          "valores": ["En curso", "Bloqueado", "Pendiente"]
+        }
+      ],
+      "columnas_visibles": [
+        "name",
+        "ws",
+        "status",
+        "priority",
+        "urgency",
+        "endDate",
+        "owner",
+        "progress",
+        "deps",
+        "blocks"
+      ],
+      "columnas_ocultas": [
+        "project",
+        "startDate",
+        "team",
+        "hashtags",
+        "notes",
+        "budget"
+      ],
+      "colores": {
+        "por_urgencia": true,
+        "esquema": "urgency_colors"
+      },
+      "uso_recomendado": "Vista diaria para equipos operativos. Ver qué hay que hacer HOY, esta semana, por área. Ideal para daily standups."
+    },
+    {
+      "id": "vista-03",
+      "nombre": "Mis Tareas (Por Owner)",
+      "descripcion": "Vista personal de cada miembro del equipo con sus tareas pendientes ordenadas por deadline",
+      "tipo": "Board",
+      "agrupacion": {
+        "campo": "owner",
+        "orden": "asc",
+        "expandir_por_defecto": false,
+        "mostrar_solo_mi_grupo": true
+      },
+      "ordenamiento": [
+        {
+          "campo": "endDate",
+          "direccion": "asc"
+        },
+        {
+          "campo": "priority",
+          "direccion": "desc"
+        }
+      ],
+      "filtros": [
+        {
+          "campo": "status",
+          "operador": "not_equals",
+          "valor": "Hecho"
+        },
+        {
+          "campo": "owner",
+          "operador": "equals",
+          "valor": "{{current_user}}"
+        }
+      ],
+      "columnas_visibles": [
+        "name",
+        "project",
+        "status",
+        "priority",
+        "urgency",
+        "startDate",
+        "endDate",
+        "progress",
+        "estimatedHours",
+        "actualHours"
+      ],
+      "columnas_ocultas": [
+        "owner",
+        "ws",
+        "team",
+        "deps",
+        "blocks",
+        "hashtags",
+        "budget"
+      ],
+      "colores": {
+        "por_deadline": true,
+        "esquema": "deadline_proximity",
+        "alertas": {
+          "rojo": "deadline < 3 días",
+          "naranja": "deadline < 7 días",
+          "verde": "deadline > 7 días"
+        }
+      },
+      "uso_recomendado": "Vista personal para cada miembro del equipo. Ver solo MIS tareas, qué hacer primero, tracking de horas."
+    },
+    {
+      "id": "vista-04",
+      "nombre": "Timeline Crítico (Gantt)",
+      "descripcion": "Vista de línea de tiempo mostrando dependencias, milestones y critical path",
+      "tipo": "Gantt",
+      "agrupacion": {
+        "campo": "project",
+        "orden": "asc",
+        "expandir_por_defecto": true
+      },
+      "ordenamiento": [
+        {
+          "campo": "startDate",
+          "direccion": "asc"
+        }
+      ],
+      "filtros": [
+        {
+          "campo": "priority",
+          "operador": "in",
+          "valores": ["P0 (Crítica)", "P1 (Alta)"]
+        }
+      ],
+      "timeline": {
+        "inicio": "startDate",
+        "fin": "endDate",
+        "mostrar_dependencias": true,
+        "mostrar_milestones": true,
+        "destacar_critical_path": true,
+        "color_milestones": "#FF6B6B",
+        "color_critical_path": "#FF0000",
+        "mostrar_hoy": true,
+        "zoom_default": "trimestre"
+      },
+      "columnas_visibles": [
+        "name",
+        "status",
+        "owner",
+        "startDate",
+        "endDate",
+        "isMilestone",
+        "isGate",
+        "deps"
+      ],
+      "colores": {
+        "por_status": true,
+        "esquema": "status_colors"
+      },
+      "uso_recomendado": "Vista para planificación temporal. Identificar cuellos de botella, critical path, impacto de retrasos. Ideal para project managers."
+    },
+    {
+      "id": "vista-05",
+      "nombre": "Situación de Riesgo",
+      "descripcion": "Vista para identificar rápidamente tareas de alto riesgo, bloqueadas o críticas",
+      "tipo": "Board",
+      "agrupacion": {
+        "campo": "risk",
+        "orden": "desc",
+        "orden_custom": ["Alto", "Medio", "Bajo"]
+      },
+      "ordenamiento": [
+        {
+          "campo": "urgency",
+          "direccion": "asc"
+        },
+        {
+          "campo": "priority",
+          "direccion": "desc"
+        }
+      ],
+      "filtros": [
+        {
+          "operador": "or",
+          "condiciones": [
+            {
+              "campo": "priority",
+              "operador": "equals",
+              "valor": "P0 (Crítica)"
+            },
+            {
+              "campo": "status",
+              "operador": "equals",
+              "valor": "Bloqueado"
+            },
+            {
+              "campo": "risk",
+              "operador": "equals",
+              "valor": "Alto"
+            }
+          ]
+        }
+      ],
+      "columnas_visibles": [
+        "name",
+        "project",
+        "status",
+        "priority",
+        "urgency",
+        "risk",
+        "owner",
+        "endDate",
+        "deps",
+        "blocks",
+        "notes"
+      ],
+      "columnas_ocultas": [
+        "startDate",
+        "team",
+        "hashtags",
+        "progress"
+      ],
+      "colores": {
+        "por_riesgo": true,
+        "esquema": "risk_colors",
+        "alertas": {
+          "rojo": "risk = Alto",
+          "naranja": "risk = Medio",
+          "verde": "risk = Bajo"
+        }
+      },
+      "uso_recomendado": "Vista de alerta para identificar problemas. Review semanal para identificar qué necesita atención inmediata o escalación."
+    },
+    {
+      "id": "vista-06",
+      "nombre": "Hitos Estratégicos",
+      "descripcion": "Vista concentrada solo en milestones y gates de decisión críticos",
+      "tipo": "Board",
+      "agrupacion": {
+        "campo": "project",
+        "orden": "asc"
+      },
+      "ordenamiento": [
+        {
+          "campo": "endDate",
+          "direccion": "asc"
+        }
+      ],
+      "filtros": [
+        {
+          "operador": "or",
+          "condiciones": [
+            {
+              "campo": "isMilestone",
+              "operador": "equals",
+              "valor": true
+            },
+            {
+              "campo": "isGate",
+              "operador": "equals",
+              "valor": true
+            }
+          ]
+        }
+      ],
+      "columnas_visibles": [
+        "name",
+        "project",
+        "status",
+        "endDate",
+        "owner",
+        "isMilestone",
+        "isGate",
+        "requiresBoardApproval",
+        "deps",
+        "blocks",
+        "notes"
+      ],
+      "columnas_ocultas": [
+        "ws",
+        "startDate",
+        "team",
+        "hashtags",
+        "urgency",
+        "hours"
+      ],
+      "colores": {
+        "por_tipo": true,
+        "gate": "#FF0000",
+        "milestone": "#4CAF50"
+      },
+      "uso_recomendado": "Vista ejecutiva para board y stakeholders. Ver solo los hitos clave y decisiones críticas. Ideal para steering committees."
+    },
+    {
+      "id": "vista-07",
+      "nombre": "Foco Semanal",
+      "descripcion": "Vista de trabajo semanal, mostrando solo lo que hay que hacer YA (inmediato + esta semana)",
+      "tipo": "List",
+      "agrupacion": {
+        "campo": "owner",
+        "orden": "asc"
+      },
+      "ordenamiento": [
+        {
+          "campo": "priority",
+          "direccion": "desc"
+        },
+        {
+          "campo": "urgency",
+          "direccion": "asc"
+        }
+      ],
+      "filtros": [
+        {
+          "campo": "urgency",
+          "operador": "in",
+          "valores": ["Inmediata", "Esta semana"]
+        },
+        {
+          "campo": "status",
+          "operador": "not_equals",
+          "valor": "Hecho"
+        }
+      ],
+      "columnas_visibles": [
+        "name",
+        "owner",
+        "status",
+        "priority",
+        "urgency",
+        "endDate",
+        "progress",
+        "estimatedHours"
+      ],
+      "columnas_ocultas": [
+        "project",
+        "ws",
+        "startDate",
+        "team",
+        "deps",
+        "blocks",
+        "hashtags",
+        "notes"
+      ],
+      "colores": {
+        "por_prioridad": true,
+        "esquema": "priority_colors"
+      },
+      "metricas": {
+        "total_tareas": true,
+        "total_horas_estimadas": true,
+        "por_owner": true
+      },
+      "uso_recomendado": "Vista para planning semanal (weekly sprint). Ver solo lo urgente, distribuir carga entre equipo. Ideal para lunes planning meeting."
+    }
+  ],
+  "esquemas_colores": {
+    "priority_colors": {
+      "P0 (Crítica)": {
+        "background": "#FF4444",
+        "text": "#FFFFFF",
+        "border": "#CC0000"
+      },
+      "P1 (Alta)": {
+        "background": "#FF9800",
+        "text": "#000000",
+        "border": "#F57C00"
+      },
+      "P2 (Media)": {
+        "background": "#FFC107",
+        "text": "#000000",
+        "border": "#FFA000"
+      },
+      "P3 (Baja)": {
+        "background": "#4CAF50",
+        "text": "#FFFFFF",
+        "border": "#388E3C"
+      }
+    },
+    "status_colors": {
+      "Pendiente": {
+        "background": "#E0E0E0",
+        "text": "#000000",
+        "border": "#BDBDBD"
+      },
+      "En curso": {
+        "background": "#2196F3",
+        "text": "#FFFFFF",
+        "border": "#1976D2"
+      },
+      "Bloqueado": {
+        "background": "#F44336",
+        "text": "#FFFFFF",
+        "border": "#D32F2F"
+      },
+      "Hecho": {
+        "background": "#4CAF50",
+        "text": "#FFFFFF",
+        "border": "#388E3C"
+      },
+      "Cancelado": {
+        "background": "#9E9E9E",
+        "text": "#FFFFFF",
+        "border": "#757575"
+      }
+    },
+    "risk_colors": {
+      "Alto": {
+        "background": "#FF5252",
+        "text": "#FFFFFF",
+        "border": "#FF1744"
+      },
+      "Medio": {
+        "background": "#FFAB40",
+        "text": "#000000",
+        "border": "#FF9100"
+      },
+      "Bajo": {
+        "background": "#69F0AE",
+        "text": "#000000",
+        "border": "#00E676"
+      }
+    },
+    "urgency_colors": {
+      "Inmediata": {
+        "background": "#FF1744",
+        "text": "#FFFFFF",
+        "border": "#D50000"
+      },
+      "Esta semana": {
+        "background": "#FF6E40",
+        "text": "#FFFFFF",
+        "border": "#FF3D00"
+      },
+      "Este mes": {
+        "background": "#FFAB40",
+        "text": "#000000",
+        "border": "#FF9100"
+      },
+      "Siguiente mes": {
+        "background": "#69F0AE",
+        "text": "#000000",
+        "border": "#00E676"
+      }
+    }
+  },
+  "workflows_recomendados": {
+    "daily_standup": {
+      "vista": "vista-02",
+      "duracion": "15min",
+      "participantes": "Todo el equipo",
+      "objetivo": "Revisar qué se hizo ayer, qué se hará hoy, qué está bloqueado",
+      "filtro_adicional": "urgency = Inmediata or Esta semana"
+    },
+    "weekly_planning": {
+      "vista": "vista-07",
+      "duracion": "60min",
+      "participantes": "Todo el equipo + PM",
+      "objetivo": "Planificar semana, distribuir carga, identificar cuellos de botella",
+      "filtro_adicional": "startDate <= today + 7 days"
+    },
+    "monthly_review": {
+      "vista": "vista-01",
+      "duracion": "90min",
+      "participantes": "Equipo core + board",
+      "objetivo": "Review progreso general, ajustar roadmap, celebrar hitos",
+      "filtro_adicional": "completedDate >= last_month"
+    },
+    "risk_review": {
+      "vista": "vista-05",
+      "duracion": "30min",
+      "participantes": "PM + stakeholders",
+      "frecuencia": "Semanal",
+      "objetivo": "Identificar y mitigar riesgos, escalar bloqueados"
+    },
+    "executive_update": {
+      "vista": "vista-06",
+      "duracion": "30min",
+      "participantes": "Board + PM",
+      "frecuencia": "Mensual",
+      "objetivo": "Presentar progreso hitos clave, decisiones gates"
+    }
+  },
+  "tips_uso": [
+    "Usar VISTA-02 (Ejecución por Área) como vista por defecto para trabajo diario",
+    "Hacer check VISTA-05 (Situación Riesgo) cada lunes para identificar problemas temprano",
+    "VISTA-04 (Timeline Gantt) es esencial para entender impacto de retrasos en cadena",
+    "VISTA-03 (Mis Tareas) debe ser la vista personal de cada miembro del equipo",
+    "Exportar VISTA-06 (Hitos) a PDF para presentaciones a stakeholders",
+    "Crear dashboards personalizados combinando vistas según necesidad",
+    "Configurar notificaciones automáticas para tareas con urgency=Inmediata y sin owner"
+  ],
+  "integraciones_sugeridas": {
+    "slack": "Notificaciones automáticas de tareas bloqueadas, nuevos milestones completados",
+    "google_calendar": "Sync deadlines de tareas P0 y P1 a calendario del equipo",
+    "jira": "Si equipo tech usa Jira, integrar tareas tecnología bi-direccional",
+    "email": "Resumen semanal automático el viernes con VISTA-07 a todo el equipo",
+    "zapier": "Automatizaciones custom según necesidad"
+  }
+}

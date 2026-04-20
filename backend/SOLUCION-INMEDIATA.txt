@@ -1,0 +1,107 @@
+╔═══════════════════════════════════════════════════════════════════════════╗
+║                    SOLUCIÓN INMEDIATA AL ERROR                            ║
+║         "column 'changes' of relation 'activity_log' does not exist"     ║
+╚═══════════════════════════════════════════════════════════════════════════╝
+
+CAUSA RAÍZ IDENTIFICADA:
+━━━━━━━━━━━━━━━━━━━━━━━
+Existe un TRIGGER SQL AUTOMÁTICO en Supabase que se ejecuta cada vez que
+guardas una tarea, intentando insertar en una columna 'changes' que NO existe.
+
+Este trigger está definido en supabase-schema.sql (líneas 103-105):
+  CREATE TRIGGER log_task_changes_trigger
+  AFTER INSERT OR UPDATE OR DELETE ON tasks
+  FOR EACH ROW EXECUTE FUNCTION log_task_changes();
+
+POR ESO el error persiste incluso después de comentar logChange() en Node.js.
+
+═══════════════════════════════════════════════════════════════════════════
+
+SOLUCIÓN (2 MINUTOS):
+━━━━━━━━━━━━━━━━━━━━
+
+1. Ve a: https://supabase.com/dashboard
+2. Selecciona tu proyecto Neo DMSTK
+3. Ve a: SQL Editor → New query
+4. Copia y pega esto:
+
+   DROP TRIGGER IF EXISTS log_task_changes_trigger ON tasks;
+   DROP FUNCTION IF EXISTS log_task_changes();
+
+5. Haz clic en RUN
+6. ¡LISTO! El guardado ahora funcionará.
+
+═══════════════════════════════════════════════════════════════════════════
+
+VERIFICACIÓN:
+━━━━━━━━━━━━━
+
+Ejecuta en Supabase:
+  SELECT * FROM pg_trigger WHERE tgrelid = 'tasks'::regclass;
+
+Debe mostrar SOLO: update_tasks_updated_at
+NO debe aparecer: log_task_changes_trigger
+
+═══════════════════════════════════════════════════════════════════════════
+
+ARCHIVOS GENERADOS PARA TI:
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📄 FIX-ACTIVITY-LOG-TRIGGER.sql
+   → Archivo SQL con el fix completo + comentarios técnicos
+
+📄 GUIA-PASO-A-PASO.md
+   → Guía visual completa con capturas y troubleshooting
+
+📄 ANALISIS-ERROR-ACTIVITY-LOG.md
+   → Análisis técnico profundo (10 secciones detalladas)
+
+📄 DIAGNOSTICO-RAPIDO.sql
+   → Script para diagnosticar el estado actual de tu BD
+
+═══════════════════════════════════════════════════════════════════════════
+
+RESUMEN TÉCNICO:
+━━━━━━━━━━━━━━━━
+
+┌─────────────────────────────────────────────────────────────────┐
+│ ANTES (con error):                                              │
+│ Guardar tarea → Trigger automático → INSERT en activity_log    │
+│                 con columna 'changes' → ❌ ERROR                 │
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│ DESPUÉS (funcionando):                                          │
+│ Guardar tarea → ✅ Se guarda exitosamente                       │
+│ (sin trigger automático interfiriendo)                          │
+└─────────────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════════
+
+ARCHIVOS ANALIZADOS:
+━━━━━━━━━━━━━━━━━━━━
+
+✓ backend/server.js (llamadas a logChange comentadas correctamente)
+✓ backend/supabase-schema.sql (trigger problemático identificado)
+✓ backend/migration-activity-log.sql (schema correcto documentado)
+✓ backend/modules/history/history.service.js (implementación analizada)
+✓ 7 archivos en total examinados
+
+═══════════════════════════════════════════════════════════════════════════
+
+SIGUIENTE PASO (OPCIONAL):
+━━━━━━━━━━━━━━━━━━━━━━━━
+
+Después de que el guardado funcione, si quieres habilitar el registro de
+historial, descomenta las líneas en server.js:
+  • Líneas 76-116 (logging en task:update)
+  • Líneas 138-155 (logging en task:delete)
+  • Líneas 201-214 (logging en POST /api/tasks)
+
+El backend se reiniciará automáticamente y empezará a registrar cambios
+usando el schema CORRECTO (sin el trigger problemático).
+
+═══════════════════════════════════════════════════════════════════════════
+
+Generado por: Claude Code Analysis
+Fecha: 2026-04-13

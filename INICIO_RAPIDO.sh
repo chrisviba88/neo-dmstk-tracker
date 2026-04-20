@@ -1,0 +1,38 @@
+#!/bin/bash
+
+echo ""
+echo "═══════════════════════════════════════════════════════════════════════════════"
+echo "                         NEO DMSTK - INICIO RÁPIDO                            "
+echo "═══════════════════════════════════════════════════════════════════════════════"
+echo ""
+echo "Este script te ayudará a levantar el sistema completo."
+echo ""
+echo "┌─────────────────────────────────────────────────────────────────────────────┐"
+echo "│                     PASO 1: Verificar datos en Supabase                     │"
+echo "└─────────────────────────────────────────────────────────────────────────────┘"
+echo ""
+
+cd backend
+node verificar_estado.mjs
+
+echo ""
+echo "┌─────────────────────────────────────────────────────────────────────────────┐"
+echo "│                     PASO 2: Iniciar servicios                                │"
+echo "└─────────────────────────────────────────────────────────────────────────────┘"
+echo ""
+echo "Para iniciar el sistema, abre 2 terminales:"
+echo ""
+echo "Terminal 1 (Backend):"
+echo "  cd backend"
+echo "  npm start"
+echo ""
+echo "Terminal 2 (Frontend):"
+echo "  cd frontend"
+echo "  npm run dev"
+echo ""
+echo "Luego abre: http://localhost:5173"
+echo ""
+echo "═══════════════════════════════════════════════════════════════════════════════"
+echo "                              ¡Sistema listo! 🚀                               "
+echo "═══════════════════════════════════════════════════════════════════════════════"
+echo ""

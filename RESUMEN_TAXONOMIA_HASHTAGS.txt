@@ -1,0 +1,194 @@
+================================================================================
+TAXONOMÍA COMPLETA DE HASHTAGS - NEO DMSTK (109 TAREAS)
+================================================================================
+Generado: 2026-04-11
+Analista: Data Analyst
+================================================================================
+
+1. SPONSORS / PARTNERS (9 hashtags, 47 aplicaciones)
+────────────────────────────────────────────────────────────────────────────
+#DARUMA                 10 tareas    Producto Daruma (diseño, producción)
+#MAVI                    1 tarea     Inversora/financiamiento
+#COACH_MIGUEL            6 tareas    Miguel Márquez (contenido/video)
+#PROFESOR               11 tareas    Profesor/a técnica artesanal
+#LUPI                    2 tareas    Lupi (perfiles externos/tech)
+#ESTUDIO_BRANDING        7 tareas    Estudio de branding/diseño
+#EMPRESA_REFORMAS        5 tareas    Empresa construcción/reforma
+#PROVEEDOR_CERAMICO      3 tareas    Fabricante Darumas cerámicos
+#PROVEEDOR_3D            2 tareas    Impresión 3D Madrid
+
+2. HITOS / MILESTONES (8 hashtags, 58 aplicaciones)
+────────────────────────────────────────────────────────────────────────────
+#PILOTO                 19 tareas    Todo el piloto (mayo-junio 2026)
+#GO_NO_GO                9 tareas    Decisión crítica 20 junio 2026
+#SOFT_OPENING           15 tareas    Apertura soft 1 sept 2026
+#GRAND_OPENING           1 tarea     Gran apertura 1 oct 2026
+#TEST_VALIDACION         4 tareas    Test proyecto 19 mayo 2026
+#GRABACION               5 tareas    Grabación contenido 9-11 junio
+#CERTIFICACION           2 tareas    Certificación facilitador
+#INICIO_REFORMA          3 tareas    Inicio obra 25 junio 2026
+
+3. FUNCIONAL / TIPO (16 hashtags, 132 aplicaciones)
+────────────────────────────────────────────────────────────────────────────
+#Contrato                6 tareas    Tareas contractuales/legales
+#Pago                    5 tareas    Pagos/facturación
+#Negociación             3 tareas    Negociaciones con terceros
+#Capacitación            5 tareas    Formación/training equipo
+#Diseño                 14 tareas    Diseño (producto/gráfico/espacial)
+#Producción              7 tareas    Fabricación/producción
+#Sourcing                6 tareas    Búsqueda proveedores/materiales
+#Marketing               8 tareas    Marketing/comunicación
+#Evento                 11 tareas    Eventos/reuniones importantes
+#Contenido              10 tareas    Creación contenido (video/textos)
+#Licencia                7 tareas    Permisos/licencias legales
+#Reclutamiento          12 tareas    Búsqueda personal/participantes
+#Infraestructura         8 tareas    Tecnología/sistemas/espacios
+#Testing                 6 tareas    Pruebas/validaciones
+#Documentación          18 tareas    Manuales/protocolos/documentos
+#Análisis                6 tareas    Análisis datos/resultados
+
+4. WORKSTREAMS (10 hashtags, 109 aplicaciones - 100%)
+────────────────────────────────────────────────────────────────────────────
+#WS_Dirección            7 tareas    Workstream Dirección
+#WS_Legal               13 tareas    Workstream Legal
+#WS_Método              10 tareas    Workstream Método
+#WS_Profesor_Contenido  17 tareas    Workstream Profesor-Contenido
+#WS_Producto            13 tareas    Workstream Producto
+#WS_Branding            11 tareas    Workstream Branding
+#WS_Espacio_E1          11 tareas    Workstream Espacio-E1
+#WS_Equipo              10 tareas    Workstream Equipo
+#WS_Piloto              10 tareas    Workstream Piloto
+#WS_Tecnología           7 tareas    Workstream Tecnología
+
+5. ESTADO / TEMPORAL (6 hashtags, 145 aplicaciones)
+────────────────────────────────────────────────────────────────────────────
+#Urgente                 8 tareas    Tareas urgentes (status="Urgente")
+#EnCurso                11 tareas    Tareas en progreso
+#Pendiente              86 tareas    Tareas pendientes
+#Bloqueante             21 tareas    Tareas que bloquean muchas otras
+#Deadline_Crítico       17 tareas    Deadlines inamovibles
+#Depende_GO_NO_GO        2 tareas    Solo se ejecutan si hay GO
+
+6. ÁMBITO / DELIVERABLE (9 hashtags, 67 aplicaciones)
+────────────────────────────────────────────────────────────────────────────
+#Kit                     8 tareas    Kits físicos
+#Manual                  4 tareas    Manuales operativos
+#Vídeo                   5 tareas    Contenido en video
+#Web                     5 tareas    Desarrollo web
+#App                     3 tareas    Funcionalidades aplicación
+#Espacio_Físico         11 tareas    Acondicionamiento/construcción
+#Merch                   2 tareas    Merchandising
+#Social_Media            2 tareas    Redes sociales
+#PR                      2 tareas    Relaciones públicas
+
+7. ROLES / STAKEHOLDERS (5 hashtags, 90 aplicaciones)
+────────────────────────────────────────────────────────────────────────────
+#David                  29 tareas    Tareas de David
+#Christian              13 tareas    Tareas de Christian
+#Cristina               13 tareas    Tareas de Cristina (Legal)
+#Facilitador             8 tareas    Tareas del facilitador
+#Equipo_Tech            11 tareas    Equipo técnico
+
+================================================================================
+ESTADÍSTICAS GLOBALES
+================================================================================
+Total tareas analizadas:        109
+Total hashtags únicos:           68
+Total aplicaciones:             567
+Promedio hashtags/tarea:        5.2
+
+Hashtags más usados:
+  1. #Pendiente           86 tareas  (78.9%)
+  2. #David               29 tareas  (26.6%)
+  3. #Bloqueante          21 tareas  (19.3%)
+  4. #PILOTO              19 tareas  (17.4%)
+  5. #Documentación       18 tareas  (16.5%)
+  6. #Deadline_Crítico    17 tareas  (15.6%)
+  7. #SOFT_OPENING        15 tareas  (13.8%)
+  8. #Diseño              14 tareas  (12.8%)
+  9. #Christian           13 tareas  (11.9%)
+ 10. #Cristina            13 tareas  (11.9%)
+
+================================================================================
+VALIDACIÓN DE BÚSQUEDAS CRÍTICAS
+================================================================================
+✓ "DARUMA"              →  10 tareas  (100% cobertura)
+✓ "PILOTO"              →  19 tareas  (100% cobertura)
+✓ "apertura"            →  15 tareas  (100% cobertura)
+✓ "softopening"         →  15 tareas  (100% cobertura)
+✓ "GO/NO-GO"            →   9 tareas  (100% cobertura)
+✓ "GRAND_OPENING"       →   1 tarea   (100% cobertura)
+✓ "urgente"             →   8 tareas  (100% cobertura)
+✓ "bloqueante"          →  21 tareas  (100% cobertura)
+
+================================================================================
+EJEMPLOS DE BÚSQUEDAS COMPUESTAS
+================================================================================
+"DARUMA + Urgente"           →  2 tareas  (t50, t51)
+"PILOTO + Bloqueante"        →  7 tareas
+"Contratos pendientes"       →  3 tareas
+"SOFT_OPENING + Diseño"      →  1 tarea
+"David + Deadline_Crítico"   → 11 tareas
+"Christian + Espacio_Físico" →  7 tareas
+
+================================================================================
+TAREAS CON MÁS HASHTAGS (Top 10)
+================================================================================
+t01   Reunión presupuesto Mavi                      8 hashtags
+t30   Confirmar técnica + profesor/a                8 hashtags
+t38   Test validación                               8 hashtags
+t42   Grabación (3 días de set)                     8 hashtags
+t55   Kits piloto artesanales (20-30 uds)           8 hashtags
+t83   Inicio reforma                                8 hashtags
+t91b  Certificación facilitador                     8 hashtags
+t98   Piloto arranca                                8 hashtags
+t102  Informe GO/NO-GO                              8 hashtags
+t50   Diseño 3D Daruma                              7 hashtags
+
+================================================================================
+DISTRIBUCIÓN POR SPONSOR/PARTNER
+================================================================================
+#PROFESOR               11 tareas  (10.1%)
+#DARUMA                 10 tareas  ( 9.2%)
+#ESTUDIO_BRANDING        7 tareas  ( 6.4%)
+#COACH_MIGUEL            6 tareas  ( 5.5%)
+#EMPRESA_REFORMAS        5 tareas  ( 4.6%)
+#PROVEEDOR_CERAMICO      3 tareas  ( 2.8%)
+#PROVEEDOR_3D            2 tareas  ( 1.8%)
+#LUPI                    2 tareas  ( 1.8%)
+#MAVI                    1 tarea   ( 0.9%)
+
+================================================================================
+DISTRIBUCIÓN POR HITO
+================================================================================
+#PILOTO                 19 tareas  (17.4%)
+#SOFT_OPENING           15 tareas  (13.8%)
+#GO_NO_GO                9 tareas  ( 8.3%)
+#GRABACION               5 tareas  ( 4.6%)
+#TEST_VALIDACION         4 tareas  ( 3.7%)
+#INICIO_REFORMA          3 tareas  ( 2.8%)
+#CERTIFICACION           2 tareas  ( 1.8%)
+#GRAND_OPENING           1 tarea   ( 0.9%)
+
+================================================================================
+RECOMENDACIONES
+================================================================================
+1. Implementar auto-complete en búsqueda (sugerir hashtags)
+2. Crear vistas predefinidas (Dashboard PILOTO, Dashboard SOFT_OPENING)
+3. Agregar búsqueda multi-idioma (apertura → #SOFT_OPENING)
+4. Validar que cada tarea tenga mínimo 3 hashtags
+5. Mostrar contador de resultados en tiempo real
+6. Implementar búsqueda compuesta (AND/OR)
+7. Exportar resultados a CSV/Excel
+
+================================================================================
+ARCHIVOS GENERADOS
+================================================================================
+1. ANALISIS_HASHTAGS_109_TAREAS.md       - Análisis completo (Markdown)
+2. hashtags-109-tareas.json              - JSON con hashtags aplicados
+3. EJEMPLOS_BUSQUEDA_HASHTAGS.md         - 15 ejemplos de búsqueda
+4. RESUMEN_TAXONOMIA_HASHTAGS.txt        - Este archivo (resumen)
+
+================================================================================
+FIN DEL REPORTE
+================================================================================

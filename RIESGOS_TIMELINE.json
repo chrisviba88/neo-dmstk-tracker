@@ -1,0 +1,524 @@
+{
+  "metadata": {
+    "generado": "2026-04-13",
+    "analista": "PM Senior con 15+ años experiencia",
+    "metodo": "Risk Matrix (Probabilidad × Impacto) + Monte Carlo Simulation estimada",
+    "objetivo": "Identificar y mitigar riesgos críticos del timeline NEO DMSTK"
+  },
+  "resumen_ejecutivo": {
+    "total_riesgos_identificados": 18,
+    "riesgos_criticos": 8,
+    "riesgos_altos": 6,
+    "riesgos_medios": 4,
+    "probabilidad_exito_timeline_actual": "45%",
+    "probabilidad_exito_con_mitigaciones": "75%",
+    "recomendacion": "IMPLEMENTAR PLAN DE MITIGACIÓN INMEDIATAMENTE. Sin mitigaciones, probabilidad de cumplir soft opening 1 sep es BAJA."
+  },
+  "matriz_riesgos": {
+    "criticos": [
+      {
+        "id": "R01",
+        "nombre": "Agosto paraliza licencias, permisos, notarías",
+        "categoria": "Constraint Temporal",
+        "probabilidad": "ALTA (80%)",
+        "impacto": "CRÍTICO",
+        "exposicion": "CRÍTICA",
+        "tareas_afectadas": ["t13", "t14", "t17", "t18", "t83"],
+        "descripcion": "Agosto es mes muerto en España. Ayuntamientos, notarías, administraciones cierran. Cualquier licencia o permiso que NO esté RESUELTO antes de julio se paraliza 4 semanas.",
+        "impacto_detallado": {
+          "tiempo": "+4 semanas mínimo",
+          "costo": "Retraso en obra = €20-30K en costos adicionales",
+          "alcance": "Soft opening imposible 1 sep. Grand opening en riesgo."
+        },
+        "señales_alerta": [
+          "t13 o t14 sin resolver 30 junio",
+          "t18 sin iniciar 15 junio",
+          "Gestoría/abogado reporta lentitud en trámites"
+        ],
+        "mitigacion": {
+          "preventiva": [
+            "Iniciar t13, t14 AHORA (ya iniciadas, bien)",
+            "Seguimiento SEMANAL con Cristina",
+            "Contratar gestoría especializada si necesario",
+            "t18 debe INICIARSE antes 15 junio",
+            "Documentación completa ANTES de julio"
+          ],
+          "contingencia": [
+            "Plan B: Espacio temporal alternativo para soft opening",
+            "Comunicar retraso a board INMEDIATAMENTE si agosto atrapa",
+            "Ajustar calendario marketing"
+          ],
+          "responsable": "Cristina + David (escalación)",
+          "deadline": "2026-06-30 (todas licencias EN PROCESO avanzado)"
+        },
+        "costo_mitigacion": "€2-5K gestoría",
+        "reduccion_probabilidad": "80% → 30%",
+        "reduccion_impacto": "CRÍTICO → ALTO"
+      },
+      {
+        "id": "R02",
+        "nombre": "Daruma lead time 8-10 semanas NO cumplido",
+        "categoria": "Producción",
+        "probabilidad": "ALTA (70%)",
+        "impacto": "CRÍTICO",
+        "exposicion": "CRÍTICA",
+        "tareas_afectadas": ["t50", "t51", "t52", "t55", "t98"],
+        "descripcion": "Pedido Daruma 3D debe salir semana 1 marzo (según roadmap original). Estamos 13 abril. Lead time 8-10 sem = recepción finales junio. Si no ejecutamos t50+t51+t52 ESTA SEMANA, kits piloto (t55) NO estarán 24 mayo. Sin kits, piloto (t98) NO ARRANCA.",
+        "impacto_detallado": {
+          "tiempo": "+2-3 semanas piloto",
+          "costo": "Producción urgente = +30% costo",
+          "alcance": "Piloto tarde = informe tarde = GO/NO-GO tarde = obra tarde = soft opening tarde"
+        },
+        "señales_alerta": [
+          "t50 sin owner 15 abril",
+          "t51 sin proveedor confirmado 18 abril",
+          "t52 sin pedido lanzado 28 abril"
+        ],
+        "mitigacion": {
+          "preventiva": [
+            "EJECUTAR t50 HOY: Confirmar ¿Dani puede diseñar?",
+            "EJECUTAR t51 HOY: Proveedor impresión 3D Madrid",
+            "LANZAR t52 esta semana: Pedido 50-80 uds",
+            "Producción urgente (+30% costo) si necesario"
+          ],
+          "contingencia": [
+            "Plan B: Daruma cartón/papel (temporal) para piloto",
+            "Reducir cantidad kits piloto de 30 a 20",
+            "Alquilar Darumas de otra fuente (¿Domestika Japan?)"
+          ],
+          "responsable": "Christian + ¿Dani?",
+          "deadline": "2026-04-18 (pedido DEBE estar lanzado)"
+        },
+        "costo_mitigacion": "€1-2K urgencia producción",
+        "reduccion_probabilidad": "70% → 20%",
+        "reduccion_impacto": "CRÍTICO → MEDIO"
+      },
+      {
+        "id": "R03",
+        "nombre": "Profesor/a NO confirmado antes 25 abril",
+        "categoria": "Recursos Humanos",
+        "probabilidad": "MEDIA (40%)",
+        "impacto": "CRÍTICO",
+        "exposicion": "CRÍTICA",
+        "tareas_afectadas": ["t30", "t31", "t32", "t33", "t34", "t38", "t42"],
+        "descripcion": "t30 tiene deadline 25 abril. Quedan 12 días. Sin profesor/a, NO hay proyecto, NO hay test, NO hay grabación, NO hay contenido. TODO EL PILOTO depende de esto.",
+        "impacto_detallado": {
+          "tiempo": "+2-4 semanas si hay que buscar alternativa",
+          "costo": "Renegociación = posible +€10-20K",
+          "alcance": "Cascada total. Piloto, GO/NO-GO, obra, soft opening TODO en riesgo."
+        },
+        "señales_alerta": [
+          "No hay contacto con candidatas 15 abril",
+          "Negociación estancada 20 abril",
+          "No hay acuerdo verbal 23 abril"
+        ],
+        "mitigacion": {
+          "preventiva": [
+            "CONTACTAR candidatas HOY (Alimaravillas, Santa Paziencia, Frutosamore)",
+            "Reunión David + candidata ESTA SEMANA",
+            "Preparar briefing atractivo (valor para profesor/a)",
+            "Acelerar t08 (contrato borrador) para mostrar seriedad"
+          ],
+          "contingencia": [
+            "Lista alternativa de 5+ profesores/as Domestika",
+            "Extender deadline a 2 mayo si negociación avanzada",
+            "David facilita piloto si no hay profesor/a (último recurso)"
+          ],
+          "responsable": "David (escalación máxima)",
+          "deadline": "2026-04-25 (NO NEGOCIABLE)"
+        },
+        "costo_mitigacion": "Tiempo David + posible +€5-10K honorarios",
+        "reduccion_probabilidad": "40% → 15%",
+        "reduccion_impacto": "CRÍTICO → ALTO"
+      },
+      {
+        "id": "R04",
+        "nombre": "GO/NO-GO sin criterios medibles",
+        "categoria": "Governance",
+        "probabilidad": "MEDIA (35%)",
+        "impacto": "CRÍTICO",
+        "exposicion": "ALTA",
+        "tareas_afectadas": ["t95", "t102", "t06"],
+        "descripcion": "t95 (Criterios GO/NO-GO por escrito) es URGENTE pero no completada. Sin criterios MEDIBLES y BINARIOS comunicados al board ANTES del piloto, decisión 27 junio será subjetiva, política, impredecible.",
+        "impacto_detallado": {
+          "tiempo": "Indecisión board = +1-2 semanas",
+          "costo": "Costos hundidos €50-100K si NO-GO",
+          "alcance": "Incertidumbre paralizante. Equipo desmotivado."
+        },
+        "señales_alerta": [
+          "t95 no completada 21 abril",
+          "Board no conoce criterios antes piloto",
+          "Criterios ambiguos o no medibles"
+        ],
+        "mitigacion": {
+          "preventiva": [
+            "DOCUMENTAR t95 ESTA SEMANA",
+            "3 criterios MEDIBLES y BINARIOS (ej. NPS ≥70, Completación ≥90%, Recurrencia ≥80%)",
+            "Comunicar a board en reunión semanal",
+            "Obtener confirmación escrita de criterios"
+          ],
+          "contingencia": [
+            "Si board no aprueba criterios, renegociar INMEDIATAMENTE",
+            "Tener Plan B (¿qué hacemos si NO-GO?) definido"
+          ],
+          "responsable": "David",
+          "deadline": "2026-04-21 (esta semana)"
+        },
+        "costo_mitigacion": "Tiempo David ~8 horas",
+        "reduccion_probabilidad": "35% → 10%",
+        "reduccion_impacto": "CRÍTICO → MEDIO"
+      },
+      {
+        "id": "R05",
+        "nombre": "Grabación (t42) falla o debe repetirse",
+        "categoria": "Producción",
+        "probabilidad": "BAJA (15%)",
+        "impacto": "CRÍTICO",
+        "exposicion": "MEDIA",
+        "tareas_afectadas": ["t42", "t43", "t44", "t45"],
+        "descripcion": "t42 son 3 días de set NO REPETIBLES. Profesora disponible solo esas fechas. Estudio reservado. Si falla técnica, error humano, o calidad insuficiente, REPETIR es IMPOSIBLE o MUY COSTOSO.",
+        "impacto_detallado": {
+          "tiempo": "+2-4 semanas buscar nueva fecha",
+          "costo": "+€10-20K nuevo set",
+          "alcance": "Contenido bloqueado = piloto sin vídeos = experiencia incompleta"
+        },
+        "señales_alerta": [
+          "Guiones (t41) no aprobados por profesora",
+          "Estudio no confirmado 2 semanas antes",
+          "Equipo técnico sin backup"
+        ],
+        "mitigacion": {
+          "preventiva": [
+            "Reservar estudio YA (t40 en curso, bien)",
+            "Ensayos previos con profesora (1 día antes)",
+            "Backup day (día 4) por si falla técnica",
+            "Equipo técnico redundante (2 cámaras backup)",
+            "Guiones aprobados ANTES de entrar a set",
+            "Checklist técnico 48h antes"
+          ],
+          "contingencia": [
+            "Seguro producción (cubre re-shoot)",
+            "Fecha alternativa pre-negociada con profesora",
+            "Contenido mínimo viable (30 piezas) si no se completan 50"
+          ],
+          "responsable": "Miguel Márquez + Productor",
+          "deadline": "2026-06-07 (checklist completo 2 días antes)"
+        },
+        "costo_mitigacion": "€2-3K seguro + backup",
+        "reduccion_probabilidad": "15% → 5%",
+        "reduccion_impacto": "CRÍTICO → ALTO"
+      },
+      {
+        "id": "R06",
+        "nombre": "Empresa reformas NO trabaja en agosto",
+        "categoria": "Construcción",
+        "probabilidad": "MEDIA (30%)",
+        "impacto": "CRÍTICO",
+        "exposicion": "ALTA",
+        "tareas_afectadas": ["t81", "t84"],
+        "descripcion": "t81 ya identifica el riesgo: 'Si no trabaja agosto, obra tarda 2-3 sem más'. Obra es 8 semanas SIN BUFFER. Si empresa cierra agosto, soft opening 1 sep IMPOSIBLE.",
+        "impacto_detallado": {
+          "tiempo": "+2-3 semanas",
+          "costo": "Campaña marketing en vacío = -€10-15K",
+          "alcance": "Soft opening tarde = credibilidad dañada"
+        },
+        "señales_alerta": [
+          "Empresa no confirma disponibilidad agosto",
+          "Presupuesto no incluye agosto como trabajable",
+          "Obra planificada con pausa agosto"
+        ],
+        "mitigacion": {
+          "preventiva": [
+            "VALIDAR disponibilidad agosto ANTES de contratar (t81)",
+            "Cláusula contractual: penalización si para en agosto",
+            "Buscar SOLO empresas que trabajan agosto",
+            "Lista de 3-5 empresas confirmadas"
+          ],
+          "contingencia": [
+            "Contratar empresa alternativa si actual no confirma",
+            "Adelantar soft opening a 15 agosto (pre-vacaciones)",
+            "Retrasar soft opening a 15 sep (post-vacaciones)"
+          ],
+          "responsable": "Christian",
+          "deadline": "2026-05-15 (empresa confirmada con disponibilidad agosto)"
+        },
+        "costo_mitigacion": "Posible +€5-10K empresa premium",
+        "reduccion_probabilidad": "30% → 10%",
+        "reduccion_impacto": "CRÍTICO → MEDIO"
+      },
+      {
+        "id": "R07",
+        "nombre": "Piloto NO cumple criterios GO",
+        "categoria": "Validación",
+        "probabilidad": "MEDIA (25%)",
+        "impacto": "CRÍTICO",
+        "exposicion": "ALTA",
+        "tareas_afectadas": ["t98", "t99", "t100", "t101", "t102", "t06"],
+        "descripcion": "Si piloto NO cumple criterios GO (NPS <70, completación <90%, recurrencia <80%), board decide NO-GO. Proyecto se DETIENE o REPLANTEA. 5 meses perdidos. Costos hundidos €50-100K.",
+        "impacto_detallado": {
+          "tiempo": "Proyecto pausa o pivota = +3-6 meses",
+          "costo": "Costos hundidos €50-100K",
+          "alcance": "Reputación, equipo desmotivado, inversores cuestionan"
+        },
+        "señales_alerta": [
+          "Test validación (t38) sale mal",
+          "Primeras sesiones piloto con NPS <70",
+          "Participantes no completan proyecto",
+          "Feedback negativo recurrente"
+        ],
+        "mitigacion": {
+          "preventiva": [
+            "Test validación (t38) RIGUROSO antes de piloto",
+            "Iterar proyecto si test falla",
+            "Manual operativo v0 (t25) MUY CLARO",
+            "Facilitador BIEN formado (t91)",
+            "Encuesta NPS (t97b) BIEN diseñada",
+            "Monitorear NPS sesión a sesión, ajustar en tiempo real"
+          ],
+          "contingencia": [
+            "Si NPS bajo: analizar causas, ajustar INMEDIATAMENTE",
+            "Extender piloto +1 semana si necesario para más datos",
+            "Plan B definido: ¿Qué hacemos si NO-GO?"
+          ],
+          "responsable": "David + Facilitador",
+          "deadline": "2026-06-19 (monitoreo continuo durante piloto)"
+        },
+        "costo_mitigacion": "Tiempo + posible extensión piloto €2-5K",
+        "reduccion_probabilidad": "25% → 10%",
+        "reduccion_impacto": "CRÍTICO → ALTO (Plan B reduce impacto)"
+      },
+      {
+        "id": "R08",
+        "nombre": "Stack tech sin decisión bloquea implementación",
+        "categoria": "Tecnología",
+        "probabilidad": "MEDIA (30%)",
+        "impacto": "ALTO",
+        "exposicion": "ALTA",
+        "tareas_afectadas": ["t111", "t112", "t113", "t114", "t115", "t116"],
+        "descripcion": "t111 'Decidir stack tech' lleva 1 semana 'en curso'. Deadline 25 abril. Sin decisión, t112-t116 BLOQUEADAS. Sin tech, piloto NO tiene plataforma vídeos, NO tiene sistema reservas.",
+        "impacto_detallado": {
+          "tiempo": "+2-3 semanas implementación",
+          "costo": "Decisión tardía = rush implementación = bugs",
+          "alcance": "Piloto sin tech = experiencia incompleta"
+        },
+        "señales_alerta": [
+          "No hay decisión 25 abril",
+          "Reunión Lupi sin conclusión",
+          "Christian no puede decidir solo"
+        ],
+        "mitigacion": {
+          "preventiva": [
+            "FORZAR DECISIÓN en reunión Lupi ESTA SEMANA",
+            "Opciones: A, B, C. Decidir en reunión, no después.",
+            "Si no hay consenso, David decide (escalación)"
+          ],
+          "contingencia": [
+            "Stack mínimo viable: Plataforma vídeos simple (Vimeo + QR)",
+            "Reservas manual primera iteración",
+            "Contratar tech freelance para acelerar"
+          ],
+          "responsable": "Christian (decisión) + Equipo Tech (implementación)",
+          "deadline": "2026-04-18 (reunión Lupi)"
+        },
+        "costo_mitigacion": "Posible freelance €5-10K si rush",
+        "reduccion_probabilidad": "30% → 10%",
+        "reduccion_impacto": "ALTO → MEDIO"
+      }
+    ],
+    "altos": [
+      {
+        "id": "R09",
+        "nombre": "Manual operativo v1 NO listo 1 agosto",
+        "categoria": "Método",
+        "probabilidad": "MEDIA (25%)",
+        "impacto": "ALTO",
+        "exposicion": "MEDIA",
+        "descripcion": "t26 depende de t102 (informe piloto 24 jun). Timeline: 24 jun → 1 ago = 38 días. Manual v1 es CRÍTICO para formación manager/anfitriones. Sin manual, apertura sin proceso.",
+        "mitigacion": {
+          "preventiva": ["Iniciar esqueleto manual AHORA (antes piloto)", "Completar con datos piloto después"],
+          "responsable": "David"
+        }
+      },
+      {
+        "id": "R10",
+        "nombre": "Identidad visual (t73) se retrasa",
+        "categoria": "Branding",
+        "probabilidad": "BAJA (20%)",
+        "impacto": "ALTO",
+        "exposicion": "MEDIA",
+        "descripcion": "5+ tareas dependen de t73. Retraso = cascada en packaging, web, social, señalética.",
+        "mitigacion": {
+          "preventiva": ["Monitorear semanalmente con estudio", "Buffer 7 días ya incluido"],
+          "responsable": "David"
+        }
+      },
+      {
+        "id": "R11",
+        "nombre": "Kits piloto NO listos 24 mayo",
+        "categoria": "Producto",
+        "probabilidad": "MEDIA (30%)",
+        "impacto": "ALTO",
+        "exposicion": "MEDIA",
+        "descripcion": "t55 depende de t35 (materiales) y t50 (Daruma). Sin kits, piloto NO ARRANCA.",
+        "mitigacion": {
+          "preventiva": ["Asignar owner Producto YA", "Seguimiento diario última semana"],
+          "responsable": "Por asignar → URGENTE"
+        }
+      },
+      {
+        "id": "R12",
+        "nombre": "Facilitador NO certificado 17 mayo",
+        "categoria": "Equipo",
+        "probabilidad": "MEDIA (25%)",
+        "impacto": "ALTO",
+        "exposicion": "MEDIA",
+        "descripcion": "t91b depende de t91 (formación 5 días) y t90 (selección). Si no hay facilitador, fundadores facilitan (plan B).",
+        "mitigacion": {
+          "preventiva": ["Búsqueda YA (t89)", "Selección antes 5 mayo"],
+          "contingencia": ["David o Miguel facilitan piloto"],
+          "responsable": "David"
+        }
+      },
+      {
+        "id": "R13",
+        "nombre": "Licencia obra (t18) NO aprobada antes agosto",
+        "categoria": "Legal",
+        "probabilidad": "MEDIA (30%)",
+        "impacto": "ALTO",
+        "exposicion": "MEDIA",
+        "descripcion": "t18 debe iniciarse junio, resolverse julio. Si entra agosto, +4 semanas.",
+        "mitigacion": {
+          "preventiva": ["Iniciar ANTES 15 junio", "Seguimiento semanal"],
+          "responsable": "Cristina"
+        }
+      },
+      {
+        "id": "R14",
+        "nombre": "Búsqueda E2-E5 NO inicia junio",
+        "categoria": "Expansión",
+        "probabilidad": "ALTA (60%)",
+        "impacto": "ALTO",
+        "exposicion": "ALTA",
+        "descripcion": "No hay workstream 'Expansión'. No hay tareas de búsqueda paralela E2-E5. Imposible abrir 5 espacios sin búsqueda desde junio.",
+        "mitigacion": {
+          "preventiva": ["Crear workstream Expansión", "Añadir 30 tareas búsqueda", "Contratar Manager Expansión"],
+          "responsable": "David + Christian"
+        }
+      }
+    ],
+    "medios": [
+      {
+        "id": "R15",
+        "nombre": "Sobrecarga David (32 tareas, 29%)",
+        "categoria": "Recursos Humanos",
+        "probabilidad": "ALTA (70%)",
+        "impacto": "MEDIO",
+        "exposicion": "MEDIA",
+        "descripcion": "David es bottleneck humano. 32 tareas + decisiones estratégicas. Riesgo burnout o errores.",
+        "mitigacion": {
+          "preventiva": ["Delegar tareas operativas", "David focus en decisiones estratégicas"],
+          "responsable": "David (autodelegación)"
+        }
+      },
+      {
+        "id": "R16",
+        "nombre": "30 tareas sin owner",
+        "categoria": "Governance",
+        "probabilidad": "ALTA (80%)",
+        "impacto": "MEDIO",
+        "exposicion": "MEDIA",
+        "descripcion": "30 tareas 'Por asignar' = 30 tareas sin accountability. Riesgo de no ejecutarse.",
+        "mitigacion": {
+          "preventiva": ["Asignar TODAS las tareas esta semana"],
+          "responsable": "David"
+        }
+      },
+      {
+        "id": "R17",
+        "nombre": "Cascada de correcciones fechas elimina buffers",
+        "categoria": "Planificación",
+        "probabilidad": "ALTA (90%)",
+        "impacto": "MEDIO",
+        "exposicion": "MEDIA",
+        "descripcion": "Corrección de dependencias t30→t31→...→t102 retrasa todo 6 días. Buffers se reducen.",
+        "mitigacion": {
+          "preventiva": ["Ejecutar t30 INMEDIATAMENTE", "Monitorear critical path diariamente"],
+          "responsable": "David"
+        }
+      },
+      {
+        "id": "R18",
+        "nombre": "Decisión board sobre 5 espacios tardía",
+        "categoria": "Governance",
+        "probabilidad": "MEDIA (50%)",
+        "impacto": "MEDIO",
+        "exposicion": "MEDIA",
+        "descripcion": "Sin confirmación de objetivo 5 espacios, planificación E2-E5 en el aire. Imposible contratar sin confirmación.",
+        "mitigacion": {
+          "preventiva": ["Reunión board ESTA SEMANA", "Decisión binaria: ¿5 espacios SÍ o NO?"],
+          "responsable": "David"
+        }
+      }
+    ]
+  },
+  "analisis_monte_carlo_estimado": {
+    "nota": "Simulación estimada basada en probabilidades de riesgos",
+    "escenarios": {
+      "optimista": {
+        "probabilidad": "15%",
+        "descripcion": "TODO sale perfecto. Sin retrasos.",
+        "fecha_soft_opening": "2026-09-01",
+        "margen": "+5 días"
+      },
+      "esperado": {
+        "probabilidad": "45%",
+        "descripcion": "Retrasos menores. Mitigaciones funcionan.",
+        "fecha_soft_opening": "2026-09-08",
+        "margen": "-2 días"
+      },
+      "pesimista": {
+        "probabilidad": "30%",
+        "descripcion": "Múltiples retrasos. Agosto atrapa licencias.",
+        "fecha_soft_opening": "2026-09-22",
+        "margen": "-16 días"
+      },
+      "catastrofico": {
+        "probabilidad": "10%",
+        "descripcion": "NO-GO o retraso crítico (profesor, grabación, GO/NO-GO).",
+        "fecha_soft_opening": "2026-10-15 o CANCELADO",
+        "margen": "N/A"
+      }
+    },
+    "recomendacion": "Implementar TODAS las mitigaciones P0. Con mitigaciones, escenario 'Esperado' sube a 75% probabilidad."
+  },
+  "plan_mitigacion_integrado": {
+    "semana_1_abril_14_18": [
+      "EJECUTAR t30 (profesor/a) - CRÍTICO",
+      "EJECUTAR t50+t51+t52 (Daruma) - CRÍTICO",
+      "FORZAR decisión t111 (stack tech) - CRÍTICO",
+      "DOCUMENTAR t95 (criterios GO/NO-GO) - CRÍTICO",
+      "ASIGNAR 30 tareas 'Por asignar' - URGENTE",
+      "Reunión board: ¿5 espacios SÍ o NO?"
+    ],
+    "semana_2_abril_21_25": [
+      "Confirmar profesor/a ANTES 25 abril",
+      "Pedido Daruma lanzado",
+      "Búsqueda empresa reformas (trabaja agosto)",
+      "Contratar Responsable Producto + Diseñador + CM"
+    ],
+    "mayo_junio": [
+      "Seguimiento SEMANAL licencias (t13, t14, t18)",
+      "Monitorear critical path DIARIAMENTE",
+      "Test validación (t38) RIGUROSO",
+      "Ensayos grabación (t42)",
+      "Iniciar esqueleto manual v1"
+    ],
+    "junio_julio": [
+      "Piloto con NPS monitoreo sesión a sesión",
+      "Informe GO/NO-GO ANTES 24 junio",
+      "Decisión board 27 junio",
+      "Licencias RESUELTAS antes julio",
+      "Iniciar búsqueda E2-E5"
+    ]
+  }
+}

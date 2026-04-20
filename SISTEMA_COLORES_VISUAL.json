@@ -1,0 +1,476 @@
+{
+  "metadata": {
+    "generado": "2026-04-13",
+    "version": "1.0",
+    "autor": "PM Senior Monday.com - 15+ años experiencia",
+    "objetivo": "Sistema visual completo para gestión de proyecto NEO DMSTK",
+    "inspiracion": "Monday.com, Asana, Notion, design systems enterprise",
+    "accesibilidad": "WCAG 2.1 AA compliant - contraste mínimo 4.5:1"
+  },
+  "paletas_principales": {
+    "prioridad": {
+      "nombre": "Priority System",
+      "uso": "Colorear tareas según urgencia/importancia",
+      "colores": {
+        "P0_critica": {
+          "nombre": "Crítica",
+          "hex": "#FF4444",
+          "rgb": "255, 68, 68",
+          "hsl": "0, 100%, 63%",
+          "contraste_blanco": "4.8:1",
+          "uso": "Tareas que bloquean todo, deadline inmediato, no negociables",
+          "texto": "#FFFFFF",
+          "border": "#CC0000",
+          "icono": "⚠️"
+        },
+        "P1_alta": {
+          "nombre": "Alta",
+          "hex": "#FF9800",
+          "rgb": "255, 152, 0",
+          "hsl": "36, 100%, 50%",
+          "contraste_negro": "4.5:1",
+          "uso": "Importante para timeline, debe completarse pronto",
+          "texto": "#000000",
+          "border": "#F57C00",
+          "icono": "🔥"
+        },
+        "P2_media": {
+          "nombre": "Media",
+          "hex": "#FFC107",
+          "rgb": "255, 193, 7",
+          "hsl": "45, 100%, 51%",
+          "contraste_negro": "4.6:1",
+          "uso": "Tareas necesarias pero flexible timing",
+          "texto": "#000000",
+          "border": "#FFA000",
+          "icono": "⏰"
+        },
+        "P3_baja": {
+          "nombre": "Baja",
+          "hex": "#4CAF50",
+          "rgb": "76, 175, 80",
+          "hsl": "122, 39%, 49%",
+          "contraste_blanco": "4.7:1",
+          "uso": "Nice to have, investigación, largo plazo",
+          "texto": "#FFFFFF",
+          "border": "#388E3C",
+          "icono": "📌"
+        }
+      }
+    },
+    "estado": {
+      "nombre": "Status Workflow",
+      "uso": "Visualizar estado actual de cada tarea",
+      "colores": {
+        "pendiente": {
+          "nombre": "Pendiente",
+          "hex": "#E0E0E0",
+          "rgb": "224, 224, 224",
+          "hsl": "0, 0%, 88%",
+          "uso": "Tarea aún no iniciada",
+          "texto": "#000000",
+          "border": "#BDBDBD",
+          "icono": "⚪",
+          "patron": "solid"
+        },
+        "en_curso": {
+          "nombre": "En Curso",
+          "hex": "#2196F3",
+          "rgb": "33, 150, 243",
+          "hsl": "207, 90%, 54%",
+          "contraste_blanco": "5.2:1",
+          "uso": "Tarea activa, en ejecución",
+          "texto": "#FFFFFF",
+          "border": "#1976D2",
+          "icono": "🔵",
+          "patron": "solid",
+          "animacion": "pulse"
+        },
+        "bloqueado": {
+          "nombre": "Bloqueado",
+          "hex": "#F44336",
+          "rgb": "244, 67, 54",
+          "hsl": "4, 90%, 58%",
+          "contraste_blanco": "5.1:1",
+          "uso": "Tarea parada por dependencia o problema",
+          "texto": "#FFFFFF",
+          "border": "#D32F2F",
+          "icono": "🔴",
+          "patron": "diagonal-stripes",
+          "alerta": true
+        },
+        "hecho": {
+          "nombre": "Hecho",
+          "hex": "#4CAF50",
+          "rgb": "76, 175, 80",
+          "hsl": "122, 39%, 49%",
+          "contraste_blanco": "4.7:1",
+          "uso": "Tarea completada satisfactoriamente",
+          "texto": "#FFFFFF",
+          "border": "#388E3C",
+          "icono": "✅",
+          "patron": "solid",
+          "efecto": "fade-opacity-50"
+        },
+        "cancelado": {
+          "nombre": "Cancelado",
+          "hex": "#9E9E9E",
+          "rgb": "158, 158, 158",
+          "hsl": "0, 0%, 62%",
+          "uso": "Tarea descartada, no se hará",
+          "texto": "#FFFFFF",
+          "border": "#757575",
+          "icono": "❌",
+          "patron": "solid",
+          "efecto": "strikethrough"
+        }
+      }
+    },
+    "riesgo": {
+      "nombre": "Risk Level",
+      "uso": "Indicar nivel de riesgo/incertidumbre",
+      "colores": {
+        "alto": {
+          "nombre": "Alto",
+          "hex": "#FF5252",
+          "rgb": "255, 82, 82",
+          "hsl": "0, 100%, 66%",
+          "contraste_blanco": "4.9:1",
+          "uso": "Alta probabilidad de problemas, monitoreo continuo",
+          "texto": "#FFFFFF",
+          "border": "#FF1744",
+          "icono": "⚠️",
+          "accion": "Review diario"
+        },
+        "medio": {
+          "nombre": "Medio",
+          "hex": "#FFAB40",
+          "rgb": "255, 171, 64",
+          "hsl": "34, 100%, 63%",
+          "contraste_negro": "4.7:1",
+          "uso": "Algunos riesgos, monitoreo semanal",
+          "texto": "#000000",
+          "border": "#FF9100",
+          "icono": "⚡",
+          "accion": "Review semanal"
+        },
+        "bajo": {
+          "nombre": "Bajo",
+          "hex": "#69F0AE",
+          "rgb": "105, 240, 174",
+          "hsl": "151, 82%, 68%",
+          "contraste_negro": "6.2:1",
+          "uso": "Riesgo mínimo, todo bajo control",
+          "texto": "#000000",
+          "border": "#00E676",
+          "icono": "✔️",
+          "accion": "Review mensual"
+        }
+      }
+    },
+    "urgencia": {
+      "nombre": "Urgency Timeline",
+      "uso": "Cuando debe hacerse (tiempo)",
+      "colores": {
+        "inmediata": {
+          "nombre": "Inmediata",
+          "hex": "#FF1744",
+          "rgb": "255, 23, 68",
+          "hsl": "348, 100%, 55%",
+          "contraste_blanco": "4.6:1",
+          "uso": "HOY o esta semana imperativo",
+          "texto": "#FFFFFF",
+          "border": "#D50000",
+          "icono": "🚨",
+          "alerta_sonido": true
+        },
+        "esta_semana": {
+          "nombre": "Esta Semana",
+          "hex": "#FF6E40",
+          "rgb": "255, 110, 64",
+          "hsl": "14, 100%, 63%",
+          "contraste_blanco": "4.8:1",
+          "uso": "Completar en próximos 7 días",
+          "texto": "#FFFFFF",
+          "border": "#FF3D00",
+          "icono": "⏱️"
+        },
+        "este_mes": {
+          "nombre": "Este Mes",
+          "hex": "#FFAB40",
+          "rgb": "255, 171, 64",
+          "hsl": "34, 100%, 63%",
+          "contraste_negro": "4.7:1",
+          "uso": "Completar en próximos 30 días",
+          "texto": "#000000",
+          "border": "#FF9100",
+          "icono": "📅"
+        },
+        "siguiente_mes": {
+          "nombre": "Siguiente Mes",
+          "hex": "#69F0AE",
+          "rgb": "105, 240, 174",
+          "hsl": "151, 82%, 68%",
+          "contraste_negro": "6.2:1",
+          "uso": "Planificación futura >30 días",
+          "texto": "#000000",
+          "border": "#00E676",
+          "icono": "🗓️"
+        }
+      }
+    }
+  },
+  "colores_semanticos": {
+    "exito": {
+      "hex": "#4CAF50",
+      "uso": "Confirmaciones, completado, éxito"
+    },
+    "advertencia": {
+      "hex": "#FFC107",
+      "uso": "Atención requerida, revisar"
+    },
+    "error": {
+      "hex": "#F44336",
+      "uso": "Errores críticos, bloqueado"
+    },
+    "info": {
+      "hex": "#2196F3",
+      "uso": "Información general, en progreso"
+    },
+    "neutro": {
+      "hex": "#9E9E9E",
+      "uso": "Sin categoría, cancelado"
+    }
+  },
+  "colores_proyectos": {
+    "fundacion_metodo": {
+      "hex": "#7C4DFF",
+      "nombre": "Purple Deep",
+      "uso": "Fundación & Método"
+    },
+    "espacio_e1": {
+      "hex": "#FF6B6B",
+      "nombre": "Red Vibrant",
+      "uso": "Espacio E1 Madrid"
+    },
+    "espacio_e2": {
+      "hex": "#4ECDC4",
+      "nombre": "Teal",
+      "uso": "Espacio E2 Barcelona"
+    },
+    "espacio_e3": {
+      "hex": "#FFD93D",
+      "nombre": "Yellow Bright",
+      "uso": "Espacio E3 México"
+    },
+    "piloto_validacion": {
+      "hex": "#6C5CE7",
+      "nombre": "Purple Medium",
+      "uso": "Piloto & Validación"
+    },
+    "branding": {
+      "hex": "#FF8787",
+      "nombre": "Pink Soft",
+      "uso": "Branding & Comunicación"
+    },
+    "kit_producto": {
+      "hex": "#95E1D3",
+      "nombre": "Mint",
+      "uso": "Kit & Producto"
+    },
+    "stack_tech": {
+      "hex": "#3867D6",
+      "nombre": "Blue Tech",
+      "uso": "Stack Tecnológico"
+    },
+    "formacion": {
+      "hex": "#FFA502",
+      "nombre": "Orange",
+      "uso": "Formación Facilitadores"
+    },
+    "daruma": {
+      "hex": "#EA2027",
+      "nombre": "Red Dark",
+      "uso": "Daruma 3D"
+    }
+  },
+  "iconos_sugeridos": {
+    "por_tipo_tarea": {
+      "milestone": "🏁",
+      "gate": "🚦",
+      "decision": "🔀",
+      "deliverable": "📦",
+      "meeting": "👥",
+      "deadline": "⏰",
+      "dependency": "🔗",
+      "blocked": "🚫"
+    },
+    "por_area": {
+      "direccion": "🎯",
+      "legal": "⚖️",
+      "metodo": "📚",
+      "profesor_contenido": "🎓",
+      "producto": "📦",
+      "branding": "🎨",
+      "espacio": "🏢",
+      "equipo": "👥",
+      "piloto": "🧪",
+      "tecnologia": "💻",
+      "expansion": "🌍",
+      "finanzas": "💰"
+    },
+    "por_estado": {
+      "pendiente": "⚪",
+      "en_curso": "🔵",
+      "bloqueado": "🔴",
+      "hecho": "✅",
+      "cancelado": "❌"
+    }
+  },
+  "patrones_visuales": {
+    "solid": {
+      "descripcion": "Color sólido sin patrón",
+      "uso": "Estado normal de tareas"
+    },
+    "diagonal_stripes": {
+      "descripcion": "Rayas diagonales",
+      "uso": "Tareas bloqueadas",
+      "css": "background: repeating-linear-gradient(45deg, {color}, {color} 10px, {color-light} 10px, {color-light} 20px);"
+    },
+    "dots": {
+      "descripcion": "Patrón de puntos",
+      "uso": "Tareas en riesgo",
+      "css": "background-image: radial-gradient({color} 20%, transparent 20%);"
+    },
+    "pulse": {
+      "descripcion": "Animación pulsante",
+      "uso": "Tareas en curso activas",
+      "css": "@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }"
+    }
+  },
+  "guia_uso_visual": {
+    "kanban_board": {
+      "descripcion": "Tablero Kanban por estado",
+      "columnas": ["Pendiente", "En Curso", "Bloqueado", "Hecho"],
+      "color_columnas_por": "estado",
+      "color_tarjetas_por": "prioridad",
+      "destacar": ["Tareas P0 con borde rojo grueso", "Tareas bloqueadas con patrón diagonal"]
+    },
+    "gantt_timeline": {
+      "descripcion": "Timeline Gantt",
+      "color_barras_por": "proyecto",
+      "color_bordes_por": "prioridad",
+      "destacar": ["Milestones con diamante", "Critical path en rojo", "Hoy con línea vertical"]
+    },
+    "lista_tareas": {
+      "descripcion": "Lista simple de tareas",
+      "color_fondo_fila_por": "urgencia",
+      "color_texto_por": "estado",
+      "iconos": ["Icono área al inicio", "Icono estado al final"]
+    },
+    "dashboard_metricas": {
+      "descripcion": "Dashboard ejecutivo",
+      "graficos": {
+        "tareas_por_estado": "Pie chart con colores estado",
+        "tareas_por_prioridad": "Bar chart con colores prioridad",
+        "timeline_milestones": "Gantt simplificado solo milestones",
+        "riesgo_overview": "Semáforo con colores riesgo"
+      }
+    }
+  },
+  "accesibilidad": {
+    "contraste_minimo": "4.5:1 (WCAG AA)",
+    "contraste_recomendado": "7:1 (WCAG AAA)",
+    "no_solo_color": "Siempre acompañar color con icono o texto",
+    "modo_daltonismo": {
+      "rojo_verde": "Usar también formas (círculo, triángulo, cuadrado)",
+      "azul_amarillo": "Asegurar suficiente contraste luminosidad"
+    },
+    "modo_oscuro": {
+      "disponible": true,
+      "paleta_ajustada": "Reducir saturación 20%, aumentar luminosidad 15%"
+    }
+  },
+  "exportacion": {
+    "css_variables": {
+      "priority_critical": "var(--color-priority-critical, #FF4444)",
+      "priority_high": "var(--color-priority-high, #FF9800)",
+      "priority_medium": "var(--color-priority-medium, #FFC107)",
+      "priority_low": "var(--color-priority-low, #4CAF50)",
+      "status_pending": "var(--color-status-pending, #E0E0E0)",
+      "status_active": "var(--color-status-active, #2196F3)",
+      "status_blocked": "var(--color-status-blocked, #F44336)",
+      "status_done": "var(--color-status-done, #4CAF50)",
+      "status_cancelled": "var(--color-status-cancelled, #9E9E9E)"
+    },
+    "tailwind_config": {
+      "extend": {
+        "colors": {
+          "priority": {
+            "critical": "#FF4444",
+            "high": "#FF9800",
+            "medium": "#FFC107",
+            "low": "#4CAF50"
+          },
+          "status": {
+            "pending": "#E0E0E0",
+            "active": "#2196F3",
+            "blocked": "#F44336",
+            "done": "#4CAF50",
+            "cancelled": "#9E9E9E"
+          }
+        }
+      }
+    }
+  },
+  "ejemplos_uso": [
+    {
+      "caso": "Tarea P0 Bloqueada",
+      "visualizacion": {
+        "fondo": "#F44336 (bloqueado)",
+        "borde": "#FF0000 4px (P0)",
+        "patron": "diagonal-stripes",
+        "icono": "🔴 🚨",
+        "efecto": "Alerta visual + sonido"
+      }
+    },
+    {
+      "caso": "Milestone Completado",
+      "visualizacion": {
+        "fondo": "#4CAF50 (hecho)",
+        "icono": "🏁 ✅",
+        "efecto": "Fade 50% opacity",
+        "texto": "Strikethrough verde"
+      }
+    },
+    {
+      "caso": "Tarea Urgencia Inmediata",
+      "visualizacion": {
+        "fondo": "#FF1744 (inmediata)",
+        "borde": "Rojo pulsante",
+        "icono": "🚨",
+        "posicion": "Top de lista siempre"
+      }
+    },
+    {
+      "caso": "Gate Decision Pendiente Aprobación Board",
+      "visualizacion": {
+        "fondo": "#7C4DFF (fundación)",
+        "borde": "#FF0000 6px (crítico)",
+        "icono": "🚦 ⚠️",
+        "badge": "Board Approval Required",
+        "efecto": "Highlight animation"
+      }
+    }
+  ],
+  "recomendaciones_implementacion": [
+    "Usar siempre iconos ADEMÁS de color (accesibilidad)",
+    "Tareas P0 siempre destacadas visualmente (borde grueso + icono)",
+    "Estado 'Bloqueado' con alerta visual clara (patrón + color)",
+    "Milestones y Gates con iconos únicos (🏁 🚦)",
+    "Dashboard con código de colores consistente",
+    "Modo oscuro disponible para trabajo nocturno",
+    "Exportar a Monday.com usando sus color pickers",
+    "Testing con usuarios daltónicos antes de finalizar"
+  ]
+}

@@ -1,0 +1,996 @@
+import { useState, useEffect, useMemo, useCallback } from "react";
+import {
+  LayoutDashboard, List, CalendarRange, Plus, X, Search,
+  AlertTriangle, Trash2, RotateCcw, ChevronDown, ChevronRight,
+  Save, ArrowUpDown, Link2, Users, ArrowRight, Wifi, WifiOff, MessageCircle, TrendingUp, History
+} from "lucide-react";
+import { createClient } from '@supabase/supabase-js';
+import io from 'socket.io-client';
+import AgentChat from './components/AgentChat';
+import ExecutiveDashboard from './components/ExecutiveDashboard';
+import HistoryViewer from './modules/History/HistoryViewer';
+
+// Configuración de Supabase y Backend
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
+
+const supabase = SUPABASE_URL && SUPABASE_ANON_KEY
+  ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+  : null;
+
+let socket;
+
+const PALETTE = {
+  nectarine: "#D7897F",
+  mostaza: "#E2B93B",
+  menthe: "#96C7B3",
+  lagune: "#6398A9",
+  cream: "#FAF8F4",
+  warm: "#F3EDE6",
+  ink: "#2C2926",
+  soft: "#5C5650",
+  muted: "#9A948C",
+  faint: "#D8D2CA",
+  danger: "#C0564A",
+  bone: "#FFFDF9",
+};
+
+const SERIF = "Georgia, 'Times New Roman', serif";
+
+const WORKSTREAMS = [
+  "Dirección", "Legal", "Método", "Profesor-Contenido", "Producto",
+  "Branding", "Espacio-E1", "Equipo", "Piloto", "Tecnología",
+];
+const WS_ABBR = ["DIR","LEG","MÉT","PROF","PROD","BRAND","ESP","EQ","PIL","TECH"];
+const WS_COLORS = [
+  PALETTE.lagune, PALETTE.lagune, "#7B6FA0", PALETTE.nectarine, PALETTE.mostaza,
+  "#D4727E", PALETTE.menthe, PALETTE.lagune, PALETTE.nectarine, PALETTE.lagune,
+];
+
+const STATUSES = ["Urgente", "En curso", "Pendiente", "Hecho", "Bloqueado"];
+const STATUS_COLORS = {
+  Urgente: PALETTE.danger, "En curso": PALETTE.mostaza, Pendiente: PALETTE.lagune,
+  Hecho: PALETTE.menthe, Bloqueado: "#8B7B74",
+};
+const STATUS_BG = {
+  Urgente: "#C0564A18", "En curso": "#E2B93B18", Pendiente: "#6398A918",
+  Hecho: "#96C7B318", Bloqueado: "#8B7B7418",
+};
+
+const PRIORITIES = ["Crítica", "Alta", "Media"];
+const PRIORITY_COLORS = { Crítica: PALETTE.danger, Alta: PALETTE.mostaza, Media: PALETTE.muted };
+
+const TODAY = new Date("2026-04-10");
+const RANGE_START = new Date("2026-04-01");
+const RANGE_END = new Date("2026-11-01");
+const RANGE_DAYS = Math.ceil((RANGE_END - RANGE_START) / 864e5);
+
+const INITIAL_OWNERS = [
+  "David", "Christian", "Cristina", "Miguel Márquez", "Profesora",
+  "Mavi", "Estudio Branding", "Facilitador", "Empresa Reformas",
+  "Equipo Tech", "Por asignar",
+];
+
+function toDate(s) { return new Date(s + "T00:00:00"); }
+function formatDate(s) {
+  return toDate(s).toLocaleDateString("es-ES", { day: "numeric", month: "short" });
+}
+function daysLeft(s) { return Math.ceil((toDate(s) - TODAY) / 864e5); }
+function makeId() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+
+function Badge({ children, color, bg, style: extraStyle }) {
+  return (
+    <span style={{
+      display: "inline-flex", alignItems: "center", fontSize: 10, fontWeight: 600,
+      padding: "2px 7px", borderRadius: 3, background: bg || PALETTE.warm,
+      color: color || PALETTE.soft, whiteSpace: "nowrap", letterSpacing: ".4px",
+      fontFamily: "var(--font-mono)", ...extraStyle,
+    }}>
+      {children}
+    </span>
+  );
+}
+
+function ProgressBar({ pct, color }) {
+  return (
+    <div style={{ height: 5, background: PALETTE.faint, borderRadius: 5, overflow: "hidden", width: "100%" }}>
+      <div style={{ height: "100%", width: Math.min(pct, 100) + "%", background: color || PALETTE.lagune, borderRadius: 5, transition: "width .5s ease" }} />
+    </div>
+  );
+}
+
+function SelectField({ value, onChange, options, placeholder, style: s }) {
+  return (
+    <select value={value} onChange={function(e) { onChange(e.target.value); }}
+      style={{ fontSize: 13, padding: "8px 12px", borderRadius: 8, border: "0.5px solid " + PALETTE.faint, background: PALETTE.bone, color: PALETTE.ink, ...s }}>
+      {placeholder ? <option value="">{placeholder}</option> : null}
+      {options.map(function(o) { return <option key={o} value={o}>{o}</option>; })}
+    </select>
+  );
+}
+
+function FieldLabel({ label, children }) {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+      <label style={{ fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: ".8px", color: PALETTE.muted, fontFamily: "var(--font-mono)" }}>{label}</label>
+      {children}
+    </div>
+  );
+}
+
+function ConnectionStatus({ isConnected, usersOnline }) {
+  return (
+    <div style={{
+      display: 'flex',
+      alignItems: 'center',
+      gap: 8,
+      padding: '6px 12px',
+      borderRadius: 8,
+      background: PALETTE.warm,
+      border: `1px solid ${PALETTE.faint}`,
+      fontSize: 11
+    }}>
+      {isConnected ? (
+        <>
+          <Wifi size={14} color={PALETTE.menthe} />
+          <span style={{ color: PALETTE.soft }}>En línea</span>
+          {usersOnline > 0 && (
+            <Badge color={PALETTE.lagune} bg={PALETTE.lagune + "15"}>
+              {usersOnline} {usersOnline === 1 ? 'usuario' : 'usuarios'}
+            </Badge>
+          )}
+        </>
+      ) : (
+        <>
+          <WifiOff size={14} color={PALETTE.danger} />
+          <span style={{ color: PALETTE.danger }}>Desconectado</span>
+        </>
+      )}
+    </div>
+  );
+}
+
+function DashboardView({ kpis, setModal }) {
+  var milestones = kpis.milestones.slice(0, 5);
+  return (
+    <div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 12, marginBottom: 28 }}>
+        {[
+          ["Total tareas", kpis.total, kpis.pct + "% completado", PALETTE.ink],
+          ["Completadas", kpis.done, null, PALETTE.menthe],
+          ["Vencidas", kpis.overdue.length, kpis.overdue.length ? "Atención" : "Al día", kpis.overdue.length ? PALETTE.danger : PALETTE.menthe],
+          ["Esta semana", kpis.thisWeek.length, null, PALETTE.mostaza],
+        ].map(function(item, i) {
+          return (
+            <div key={i} style={{ background: PALETTE.bone, border: "0.5px solid " + PALETTE.faint, borderRadius: 10, padding: "14px 18px" }}>
+              <div style={{ fontSize: 10, color: PALETTE.muted, letterSpacing: 1, textTransform: "uppercase", fontFamily: "var(--font-mono)", marginBottom: 6 }}>{item[0]}</div>
+              <div style={{ fontSize: 30, fontWeight: 400, fontFamily: SERIF, color: item[3], lineHeight: 1 }}>{item[1]}</div>
+              {item[2] ? <div style={{ fontSize: 11, color: PALETTE.muted, marginTop: 6 }}>{item[2]}</div> : null}
+            </div>
+          );
+        })}
+      </div>
+
+      {kpis.overdue.length > 0 ? (
+        <div style={{ background: "#C0564A08", border: "1px solid #C0564A25", borderRadius: 10, padding: "16px 20px", marginBottom: 24 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 10 }}>
+            <AlertTriangle size={14} style={{ color: PALETTE.danger }} />
+            <span style={{ fontSize: 14, fontWeight: 400, color: PALETTE.danger, fontFamily: SERIF }}>Tareas vencidas</span>
+          </div>
+          {kpis.overdue.slice(0, 6).map(function(t) {
+            return (
+              <div key={t.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 13, padding: "6px 0", borderBottom: "0.5px solid #C0564A12" }}>
+                <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", minWidth: 0 }}>{t.name}</span>
+                <div style={{ display: "flex", gap: 8, alignItems: "center", flexShrink: 0 }}>
+                  <Badge color={PALETTE.danger} bg="#C0564A15">{Math.abs(daysLeft(t.endDate))}d</Badge>
+                  <button onClick={function() { setModal({ ...t }); }} style={{ fontSize: 11, padding: "3px 10px", borderRadius: 5, border: "0.5px solid " + PALETTE.faint, background: PALETTE.bone, cursor: "pointer", color: PALETTE.soft }}>Ver</button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      ) : null}
+
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24, marginBottom: 28 }}>
+        <div>
+          <h3 style={{ fontFamily: SERIF, fontSize: 16, fontWeight: 400, marginBottom: 14 }}>Próximos hitos</h3>
+          {milestones.map(function(m) {
+            var days = daysLeft(m.endDate);
+            return (
+              <div key={m.id} style={{ background: PALETTE.bone, border: "0.5px solid " + PALETTE.faint, borderRadius: 8, padding: "12px 16px", marginBottom: 8, borderLeft: "3px solid " + (days <= 14 ? PALETTE.nectarine : PALETTE.mostaza) }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <span style={{ fontSize: 13, fontFamily: SERIF }}>{m.name}</span>
+                  <Badge color={days <= 14 ? PALETTE.danger : PALETTE.mostaza} bg={days <= 14 ? "#C0564A12" : "#E2B93B12"} style={{ fontSize: 12, fontWeight: 700 }}>{days}d</Badge>
+                </div>
+                <div style={{ fontSize: 11, color: PALETTE.muted, marginTop: 3 }}>{formatDate(m.endDate)} · {m.ws} · {m.owner}</div>
+              </div>
+            );
+          })}
+        </div>
+        <div>
+          <h3 style={{ fontFamily: SERIF, fontSize: 16, fontWeight: 400, marginBottom: 14 }}>Progreso por área</h3>
+          {kpis.byWs.map(function(w) {
+            return (
+              <div key={w.ws} style={{ display: "grid", gridTemplateColumns: "110px 1fr 36px", gap: 10, alignItems: "center", fontSize: 12, marginBottom: 8 }}>
+                <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: PALETTE.soft }}>{w.ws}</span>
+                <ProgressBar pct={w.pct} color={w.color} />
+                <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, textAlign: "right", color: PALETTE.muted }}>{w.pct}%</span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function TasksView({ tasks, sortKey, sortDir, toggleSort, updateTask, deleteTask, setModal, depsMap }) {
+  function TH({ k, children, w }) {
+    return (
+      <th onClick={function() { toggleSort(k); }} style={{ fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: ".6px", color: PALETTE.muted, padding: "10px 8px", textAlign: "left", cursor: "pointer", whiteSpace: "nowrap", width: w, fontFamily: "var(--font-mono)", borderBottom: "1px solid " + PALETTE.faint, background: PALETTE.warm }}>
+        <span style={{ display: "inline-flex", alignItems: "center", gap: 3 }}>{children}{sortKey === k ? <ArrowUpDown size={9} /> : null}</span>
+      </th>
+    );
+  }
+
+  return (
+    <div style={{ overflowX: "auto" }}>
+      <div style={{ fontSize: 11, color: PALETTE.muted, marginBottom: 6 }}>{tasks.length} tareas</div>
+      <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+        <thead>
+          <tr>
+            <TH k="name">Tarea</TH>
+            <TH k="ws" w="85px">Área</TH>
+            <TH k="status" w="105px">Estado</TH>
+            <TH k="priority" w="70px">Prior.</TH>
+            <TH k="endDate" w="80px">Fin</TH>
+            <TH k="owner" w="110px">Owner</TH>
+            <th style={{ width: 36, background: PALETTE.warm, borderBottom: "1px solid " + PALETTE.faint }} />
+          </tr>
+        </thead>
+        <tbody>
+          {tasks.map(function(t) {
+            var isOverdue = t.status !== "Hecho" && toDate(t.endDate) < TODAY;
+            var isSoon = !isOverdue && t.status !== "Hecho" && daysLeft(t.endDate) <= 7 && daysLeft(t.endDate) >= 0;
+            var blocks = depsMap[t.id];
+            return (
+              <tr key={t.id} onClick={function() { setModal({ ...t }); }}
+                style={{ borderBottom: "0.5px solid " + PALETTE.faint, background: isOverdue ? "#C0564A06" : isSoon ? "#E2B93B06" : "transparent", cursor: "pointer" }}>
+                <td style={{ padding: "10px 8px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    {t.isMilestone ? <span style={{ color: PALETTE.mostaza, fontSize: 11 }}>◆</span> : null}
+                    <span style={{ fontWeight: t.isMilestone ? 500 : 400, fontFamily: t.isMilestone ? SERIF : "inherit" }}>{t.name}</span>
+                    {isOverdue ? <span style={{ animation: "pulse 2s infinite", fontSize: 7, color: PALETTE.danger }}>●</span> : null}
+                  </div>
+                  {(t.deps && t.deps.length > 0) || blocks ? (
+                    <div style={{ fontSize: 10, color: PALETTE.muted, marginTop: 2, display: "flex", gap: 8 }}>
+                      {t.deps && t.deps.length > 0 ? <span style={{ display: "flex", alignItems: "center", gap: 3 }}><Link2 size={9} />depende de {t.deps.length}</span> : null}
+                      {blocks ? <span style={{ display: "flex", alignItems: "center", gap: 3 }}><ArrowRight size={9} />bloquea {blocks.length}</span> : null}
+                    </div>
+                  ) : null}
+                </td>
+                <td style={{ padding: "10px 8px" }}>
+                  <Badge color={WS_COLORS[WORKSTREAMS.indexOf(t.ws)]} bg={WS_COLORS[WORKSTREAMS.indexOf(t.ws)] + "15"}>{WS_ABBR[WORKSTREAMS.indexOf(t.ws)]}</Badge>
+                </td>
+                <td style={{ padding: "10px 8px" }} onClick={function(e) { e.stopPropagation(); }}>
+                  <select value={t.status} onChange={function(e) { updateTask(t.id, { status: e.target.value }); }}
+                    style={{ fontSize: 11, padding: "4px 6px", borderRadius: 5, border: "1.5px solid " + STATUS_COLORS[t.status], background: STATUS_BG[t.status], color: STATUS_COLORS[t.status], fontWeight: 600, cursor: "pointer", width: "100%" }}>
+                    {STATUSES.map(function(s) { return <option key={s} value={s}>{s}</option>; })}
+                  </select>
+                </td>
+                <td style={{ padding: "10px 8px" }}><Badge color={PRIORITY_COLORS[t.priority]} bg={PRIORITY_COLORS[t.priority] + "15"}>{t.priority}</Badge></td>
+                <td style={{ padding: "10px 8px", fontFamily: "var(--font-mono)", fontSize: 11, color: isOverdue ? PALETTE.danger : PALETTE.muted }}>
+                  {isOverdue ? "–" + Math.abs(daysLeft(t.endDate)) + "d" : formatDate(t.endDate)}
+                </td>
+                <td style={{ padding: "10px 8px", fontSize: 12, color: PALETTE.soft }}>{t.owner}</td>
+                <td style={{ padding: "10px 8px" }} onClick={function(e) { e.stopPropagation(); }}>
+                  <button onClick={function() { deleteTask(t.id); }} style={{ padding: 4, border: "none", background: "transparent", cursor: "pointer", color: PALETTE.faint }}><Trash2 size={13} /></button>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+      {tasks.length === 0 ? <div style={{ padding: 40, textAlign: "center", color: PALETTE.muted, fontFamily: SERIF }}>Sin resultados</div> : null}
+    </div>
+  );
+}
+
+function TimelineView({ tasks, expandedWs, setExpandedWs }) {
+  var [depImpactModal, setDepImpactModal] = useState(null);
+  var [impactData, setImpactData] = useState(null);
+  var [taskPositions, setTaskPositions] = useState({});
+  var svgRef = useState(null)[0];
+
+  var months = [];
+  for (var m = 3; m <= 10; m++) months.push(new Date(2026, m, 1));
+  var todayPct = ((TODAY - RANGE_START) / 864e5 / RANGE_DAYS) * 100;
+  var grouped = WORKSTREAMS.map(function(ws, i) {
+    return { ws: ws, color: WS_COLORS[i], tasks: tasks.filter(function(t) { return t.ws === ws; }) };
+  }).filter(function(g) { return g.tasks.length > 0; });
+  var NAME_W = 300;
+
+  function getPos(start, end) {
+    var a = Math.max(0, (toDate(start) - RANGE_START) / 864e5);
+    var b = Math.max(a + 2, (toDate(end) - RANGE_START) / 864e5);
+    return { left: (a / RANGE_DAYS) * 100, width: ((b - a) / RANGE_DAYS) * 100 };
+  }
+
+  function getDependencyColor(depTask) {
+    if (!depTask) return PALETTE.lagune;
+    if (depTask.status === "Hecho") return PALETTE.menthe;
+    if (depTask.status === "Bloqueado" || toDate(depTask.endDate) < TODAY) return PALETTE.danger;
+    if (depTask.status === "En curso") return PALETTE.mostaza;
+    return PALETTE.lagune;
+  }
+
+  async function analyzeImpact(taskId, newEndDate) {
+    try {
+      const response = await fetch(BACKEND_URL + '/api/dependencies/analyze-impact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ taskId, newEndDate })
+      });
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error analyzing impact:', error);
+      return null;
+    }
+  }
+
+  async function propagateDependencies(taskId, newEndDate) {
+    try {
+      const response = await fetch(BACKEND_URL + '/api/dependencies/propagate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ taskId, newEndDate })
+      });
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error propagating dependencies:', error);
+      return null;
+    }
+  }
+
+  useEffect(function() {
+    var positions = {};
+    grouped.forEach(function(g) {
+      if (expandedWs[g.ws] !== false) {
+        g.tasks.forEach(function(t) {
+          var elem = document.getElementById('task-bar-' + t.id);
+          if (elem) {
+            var rect = elem.getBoundingClientRect();
+            var containerRect = elem.closest('.timeline-container')?.getBoundingClientRect();
+            if (containerRect) {
+              positions[t.id] = {
+                x: rect.left - containerRect.left + rect.width / 2,
+                y: rect.top - containerRect.top + rect.height / 2,
+                endX: rect.right - containerRect.left
+              };
+            }
+          }
+        });
+      }
+    });
+    setTaskPositions(positions);
+  }, [tasks, expandedWs, grouped]);
+
+  return (
+    <div style={{ overflowX: "auto" }}>
+      <div className="timeline-container" style={{ minWidth: 1100, position: "relative" }}>
+        {/* SVG overlay para líneas de dependencias */}
+        <svg style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: "100%",
+          height: "100%",
+          pointerEvents: "none",
+          zIndex: 1
+        }}>
+          <defs>
+            <marker id="arrowhead-green" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+              <polygon points="0 0, 6 3, 0 6" fill={PALETTE.menthe} />
+            </marker>
+            <marker id="arrowhead-red" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+              <polygon points="0 0, 6 3, 0 6" fill={PALETTE.danger} />
+            </marker>
+            <marker id="arrowhead-blue" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+              <polygon points="0 0, 6 3, 0 6" fill={PALETTE.lagune} />
+            </marker>
+            <marker id="arrowhead-yellow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+              <polygon points="0 0, 6 3, 0 6" fill={PALETTE.mostaza} />
+            </marker>
+          </defs>
+          {tasks.map(function(t) {
+            if (!t.deps || t.deps.length === 0) return null;
+            var targetPos = taskPositions[t.id];
+            if (!targetPos) return null;
+
+            return t.deps.map(function(depId) {
+              var depTask = tasks.find(function(dt) { return dt.id === depId; });
+              var sourcePos = taskPositions[depId];
+              if (!sourcePos || !depTask) return null;
+
+              var color = getDependencyColor(depTask);
+              var markerId = color === PALETTE.menthe ? "arrowhead-green" :
+                            color === PALETTE.danger ? "arrowhead-red" :
+                            color === PALETTE.mostaza ? "arrowhead-yellow" : "arrowhead-blue";
+
+              // Calcular puntos de control para curva Bezier
+              var midX = (sourcePos.endX + targetPos.x) / 2;
+              var path = "M " + sourcePos.endX + " " + sourcePos.y +
+                        " Q " + midX + " " + sourcePos.y + " " +
+                        midX + " " + ((sourcePos.y + targetPos.y) / 2) +
+                        " T " + (targetPos.x - 8) + " " + targetPos.y;
+
+              return (
+                <g key={depId + "-" + t.id}>
+                  <path
+                    d={path}
+                    stroke={color}
+                    strokeWidth="1.5"
+                    fill="none"
+                    opacity="0.6"
+                    markerEnd={"url(#" + markerId + ")"}
+                  />
+                </g>
+              );
+            });
+          })}
+        </svg>
+
+        <div style={{ display: "flex", borderBottom: "1px solid " + PALETTE.faint, paddingBottom: 6, marginBottom: 4, position: "relative", zIndex: 2 }}>
+          <div style={{ width: NAME_W, flexShrink: 0, fontSize: 10, fontFamily: "var(--font-mono)", color: PALETTE.muted, letterSpacing: 1, padding: "4px 0", textTransform: "uppercase" }}>Tarea</div>
+          <div style={{ flex: 1, position: "relative", height: 20 }}>
+            {months.map(function(mo, i) {
+              var pct = ((mo - RANGE_START) / 864e5 / RANGE_DAYS) * 100;
+              return <div key={i} style={{ position: "absolute", left: pct + "%", fontSize: 10, fontFamily: "var(--font-mono)", color: PALETTE.muted, letterSpacing: ".5px", textTransform: "uppercase", top: 2 }}>{mo.toLocaleDateString("es-ES", { month: "short" })}</div>;
+            })}
+          </div>
+        </div>
+
+        {grouped.map(function(g) {
+          var isExp = expandedWs[g.ws] !== false;
+          var doneCount = g.tasks.filter(function(t) { return t.status === "Hecho"; }).length;
+          return (
+            <div key={g.ws} style={{ marginBottom: 2, position: "relative", zIndex: 2 }}>
+              <div onClick={function() { setExpandedWs(function(prev) { return { ...prev, [g.ws]: !isExp }; }); }}
+                style={{ display: "flex", alignItems: "center", cursor: "pointer", padding: "8px 0", background: PALETTE.warm, borderRadius: 6, marginBottom: 2 }}>
+                <div style={{ width: NAME_W, flexShrink: 0, display: "flex", alignItems: "center", gap: 8, paddingLeft: 10 }}>
+                  {isExp ? <ChevronDown size={12} color={PALETTE.muted} /> : <ChevronRight size={12} color={PALETTE.muted} />}
+                  <div style={{ width: 8, height: 8, borderRadius: 2, background: g.color }} />
+                  <span style={{ fontFamily: SERIF, fontSize: 14, fontWeight: 500 }}>{g.ws}</span>
+                  <Badge style={{ fontSize: 9 }}>{doneCount}/{g.tasks.length}</Badge>
+                </div>
+              </div>
+
+              {isExp ? g.tasks.map(function(t) {
+                var pos = getPos(t.startDate, t.endDate);
+                var isOverdue = t.status !== "Hecho" && toDate(t.endDate) < TODAY;
+                var isDone = t.status === "Hecho";
+                var hasDeps = t.deps && t.deps.length > 0;
+                return (
+                  <div key={t.id} style={{ display: "flex", alignItems: "center", padding: "5px 0", borderBottom: "0.5px solid " + PALETTE.faint + "08" }}>
+                    <div style={{ width: NAME_W, flexShrink: 0, paddingLeft: 36, display: "flex", alignItems: "center", gap: 6, minWidth: 0, paddingRight: 12 }}>
+                      {t.isMilestone ? <span style={{ color: PALETTE.mostaza, fontSize: 11, flexShrink: 0 }}>◆</span> : null}
+                      {hasDeps ? <Link2 size={10} style={{ color: PALETTE.lagune, flexShrink: 0, opacity: 0.6 }} /> : null}
+                      <span style={{
+                        fontSize: 13, fontWeight: t.isMilestone ? 500 : 400,
+                        fontFamily: t.isMilestone ? SERIF : "inherit",
+                        color: isOverdue ? PALETTE.danger : isDone ? PALETTE.menthe : PALETTE.ink,
+                        overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                        textDecoration: isDone ? "line-through" : "none",
+                      }} title={t.name + "\n" + t.owner + " · " + formatDate(t.startDate) + " → " + formatDate(t.endDate) + (t.risk ? "\n⚠ " + t.risk : "")}>
+                        {t.name}
+                      </span>
+                      {isOverdue ? <span style={{ animation: "pulse 2s infinite", fontSize: 7, color: PALETTE.danger, flexShrink: 0 }}>●</span> : null}
+                      <span style={{ fontSize: 10, color: PALETTE.muted, flexShrink: 0, marginLeft: "auto", fontFamily: "var(--font-mono)" }}>{t.owner.split(" ")[0]}</span>
+                    </div>
+                    <div style={{ flex: 1, position: "relative", height: 22 }}>
+                      {months.map(function(mo, i) {
+                        var mp = ((mo - RANGE_START) / 864e5 / RANGE_DAYS) * 100;
+                        return <div key={i} style={{ position: "absolute", left: mp + "%", top: 0, bottom: 0, width: "0.5px", background: PALETTE.faint + "50" }} />;
+                      })}
+                      <div id={"task-bar-" + t.id} title={t.name + " — " + formatDate(t.startDate) + " → " + formatDate(t.endDate)}
+                        style={{
+                          position: "absolute", left: pos.left + "%", width: pos.width + "%", top: 5, height: 12,
+                          borderRadius: t.isMilestone ? 2 : 6,
+                          background: isDone ? PALETTE.menthe + "70" : isOverdue ? PALETTE.danger + "55" : g.color + "45",
+                          border: t.isMilestone ? "1.5px solid " + g.color : "none",
+                          transition: "all .3s",
+                          animation: isOverdue ? "pulse 3s infinite" : "none",
+                        }}>
+                        {isDone ? <div style={{ height: "100%", borderRadius: "inherit", background: PALETTE.menthe }} /> : null}
+                      </div>
+                    </div>
+                  </div>
+                );
+              }) : null}
+            </div>
+          );
+        })}
+
+        <div style={{
+          position: "absolute", top: 0, bottom: 0,
+          left: "calc(" + NAME_W + "px + (100% - " + NAME_W + "px) * " + (todayPct / 100) + ")",
+          width: 2, background: PALETTE.nectarine, zIndex: 5, pointerEvents: "none", opacity: 0.85,
+        }}>
+          <div style={{ position: "absolute", top: -4, left: -14, fontSize: 9, fontWeight: 600, color: PALETTE.nectarine, fontFamily: "var(--font-mono)", background: PALETTE.cream, padding: "1px 5px", borderRadius: 3, border: "1px solid " + PALETTE.nectarine }}>Hoy</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DependencyImpactModal({ task, newEndDate, impactData, onConfirm, onCancel }) {
+  return (
+    <div style={{
+      position: "fixed", inset: 0, zIndex: 200, background: "rgba(44,41,38,0.6)",
+      display: "flex", justifyContent: "center", alignItems: "center", padding: 20
+    }} onClick={onCancel}>
+      <div onClick={function(e) { e.stopPropagation(); }} style={{
+        background: PALETTE.bone, borderRadius: 16, border: "1px solid " + PALETTE.faint,
+        width: "100%", maxWidth: 500, boxShadow: "0 24px 80px rgba(0,0,0,0.2)"
+      }}>
+        <div style={{ padding: "20px 24px", borderBottom: "1px solid " + PALETTE.faint, background: PALETTE.warm }}>
+          <h3 style={{ fontFamily: SERIF, fontSize: 20, fontWeight: 400, margin: 0, color: PALETTE.ink }}>
+            Impacto en Dependencias
+          </h3>
+          <p style={{ fontSize: 13, color: PALETTE.soft, margin: "8px 0 0 0" }}>
+            Cambiar fecha de "{task.name}" afectará otras tareas
+          </p>
+        </div>
+
+        <div style={{ padding: "20px 24px" }}>
+          <div style={{
+            background: PALETTE.warm, padding: "12px 16px", borderRadius: 8,
+            marginBottom: 16, border: "1px solid " + PALETTE.faint
+          }}>
+            <div style={{ fontSize: 11, color: PALETTE.muted, marginBottom: 4 }}>Nueva fecha de finalización</div>
+            <div style={{ fontSize: 16, fontFamily: SERIF, color: PALETTE.ink }}>
+              {formatDate(newEndDate)}
+            </div>
+          </div>
+
+          {impactData && impactData.affectedTasks && impactData.affectedTasks.length > 0 ? (
+            <>
+              <div style={{
+                fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: ".8px",
+                color: PALETTE.muted, fontFamily: "var(--font-mono)", marginBottom: 12
+              }}>
+                Tareas afectadas ({impactData.affectedTasks.length})
+              </div>
+              <div style={{ maxHeight: 200, overflowY: "auto" }}>
+                {impactData.affectedTasks.map(function(affectedTask, i) {
+                  return (
+                    <div key={i} style={{
+                      padding: "10px 12px", background: PALETTE.warm, borderRadius: 6,
+                      marginBottom: 8, border: "1px solid " + PALETTE.faint
+                    }}>
+                      <div style={{ fontSize: 13, fontWeight: 500, marginBottom: 4 }}>
+                        {affectedTask.name}
+                      </div>
+                      <div style={{ fontSize: 11, color: PALETTE.soft }}>
+                        {affectedTask.oldEndDate && affectedTask.newEndDate ? (
+                          <span>{formatDate(affectedTask.oldEndDate)} → {formatDate(affectedTask.newEndDate)}</span>
+                        ) : null}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </>
+          ) : (
+            <div style={{ textAlign: "center", padding: 20, color: PALETTE.muted, fontSize: 13 }}>
+              No hay tareas dependientes afectadas
+            </div>
+          )}
+        </div>
+
+        <div style={{
+          padding: "16px 24px", borderTop: "1px solid " + PALETTE.faint,
+          display: "flex", justifyContent: "flex-end", gap: 10, background: PALETTE.warm
+        }}>
+          <button onClick={onCancel} style={{
+            padding: "10px 20px", borderRadius: 8, fontSize: 13, border: "1px solid " + PALETTE.faint,
+            background: "transparent", cursor: "pointer", color: PALETTE.soft
+          }}>
+            Cancelar
+          </button>
+          <button onClick={onConfirm} style={{
+            padding: "10px 24px", borderRadius: 8, fontSize: 14, fontWeight: 500,
+            border: "none", background: PALETTE.nectarine, color: "#fff",
+            cursor: "pointer", fontFamily: SERIF
+          }}>
+            Confirmar cambio
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function TaskModal({ task, owners, addOwner, tasks, onSave, onClose }) {
+  var [form, setForm] = useState({ ...task });
+  var isNew = !task.id;
+  function set(key, val) { setForm(function(prev) { return { ...prev, [key]: val }; }); }
+  var allTasks = tasks.filter(function(t) { return t.id !== form.id; });
+  var inputStyle = { fontSize: 14, padding: "10px 14px", borderRadius: 8, border: "1px solid " + PALETTE.faint, background: "#fff", width: "100%", color: PALETTE.ink };
+
+  return (
+    <div style={{ position: "absolute", inset: 0, zIndex: 100, background: "rgba(44,41,38,0.5)", display: "flex", justifyContent: "center", paddingTop: 30, minHeight: "100vh" }}
+      onClick={onClose}>
+      <div onClick={function(e) { e.stopPropagation(); }}
+        style={{ background: PALETTE.bone, borderRadius: 16, border: "1px solid " + PALETTE.faint, width: "100%", maxWidth: 600, height: "fit-content", overflow: "hidden", boxShadow: "0 24px 80px rgba(0,0,0,0.15)" }}>
+
+        <div style={{ padding: "20px 28px", borderBottom: "1px solid " + PALETTE.faint, display: "flex", justifyContent: "space-between", alignItems: "center", background: PALETTE.warm }}>
+          <h3 style={{ fontFamily: SERIF, fontSize: 22, fontWeight: 400, margin: 0, color: PALETTE.ink }}>{isNew ? "Nueva tarea" : "Editar tarea"}</h3>
+          <button onClick={onClose} style={{ border: "none", background: "transparent", cursor: "pointer", color: PALETTE.muted, padding: 4 }}><X size={20} /></button>
+        </div>
+
+        <div style={{ padding: "24px 28px", display: "flex", flexDirection: "column", gap: 16, maxHeight: "65vh", overflowY: "auto" }}>
+
+          <FieldLabel label="Nombre">
+            <input value={form.name} onChange={function(e) { set("name", e.target.value); }}
+              style={{ ...inputStyle, fontFamily: SERIF, fontSize: 16 }} placeholder="Nombre de la tarea…" />
+          </FieldLabel>
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+            <FieldLabel label="Workstream">
+              <SelectField value={form.ws} onChange={function(v) { set("ws", v); }} options={WORKSTREAMS} style={{ ...inputStyle, fontSize: 13 }} />
+            </FieldLabel>
+            <FieldLabel label="Owner">
+              <input list="ownerDatalist" value={form.owner} onChange={function(e) { set("owner", e.target.value); }}
+                style={inputStyle} placeholder="Escribe o selecciona…" />
+              <datalist id="ownerDatalist">{owners.map(function(o) { return <option key={o} value={o} />; })}</datalist>
+            </FieldLabel>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 14 }}>
+            <FieldLabel label="Estado">
+              <SelectField value={form.status} onChange={function(v) { set("status", v); }} options={STATUSES} style={{ ...inputStyle, fontSize: 13 }} />
+            </FieldLabel>
+            <FieldLabel label="Prioridad">
+              <SelectField value={form.priority} onChange={function(v) { set("priority", v); }} options={PRIORITIES} style={{ ...inputStyle, fontSize: 13 }} />
+            </FieldLabel>
+            <FieldLabel label="Hito">
+              <button onClick={function() { set("isMilestone", !form.isMilestone); }}
+                style={{ ...inputStyle, cursor: "pointer", textAlign: "center", fontFamily: SERIF, color: form.isMilestone ? PALETTE.mostaza : PALETTE.muted, background: form.isMilestone ? "#E2B93B12" : "#fff", border: "1px solid " + (form.isMilestone ? PALETTE.mostaza : PALETTE.faint), fontWeight: form.isMilestone ? 600 : 400 }}>
+                {form.isMilestone ? "◆ Sí" : "No"}
+              </button>
+            </FieldLabel>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+            <FieldLabel label="Inicio">
+              <input type="date" value={form.startDate} onChange={function(e) { set("startDate", e.target.value); }} style={{ ...inputStyle, fontSize: 13 }} />
+            </FieldLabel>
+            <FieldLabel label="Fin">
+              <input type="date" value={form.endDate} onChange={function(e) { set("endDate", e.target.value); }} style={{ ...inputStyle, fontSize: 13 }} />
+            </FieldLabel>
+          </div>
+
+          <FieldLabel label="Depende de">
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginBottom: 4 }}>
+              {(form.deps || []).map(function(dep) {
+                var depTask = tasks.find(function(t) { return t.id === dep; });
+                if (!depTask) return null;
+                return (
+                  <Badge key={dep} color={PALETTE.lagune} bg={PALETTE.lagune + "15"} style={{ cursor: "pointer", fontSize: 11 }}>
+                    <span onClick={function() { set("deps", (form.deps || []).filter(function(x) { return x !== dep; })); }}>{depTask.name.slice(0, 35)} ✕</span>
+                  </Badge>
+                );
+              })}
+            </div>
+            <select onChange={function(e) { if (e.target.value && !(form.deps || []).includes(e.target.value)) set("deps", [...(form.deps || []), e.target.value]); e.target.value = ""; }}
+              style={{ ...inputStyle, fontSize: 12, color: PALETTE.soft }}>
+              <option value="">+ Añadir dependencia…</option>
+              {allTasks.map(function(t) { return <option key={t.id} value={t.id}>{t.name}</option>; })}
+            </select>
+          </FieldLabel>
+
+          <FieldLabel label="Riesgo si se retrasa">
+            <textarea value={form.risk} onChange={function(e) { set("risk", e.target.value); }} rows={2}
+              style={{ ...inputStyle, fontSize: 13, resize: "vertical" }} placeholder="¿Qué pasa si se retrasa?" />
+          </FieldLabel>
+
+          <FieldLabel label="Notas">
+            <textarea value={form.notes} onChange={function(e) { set("notes", e.target.value); }} rows={2}
+              style={{ ...inputStyle, fontSize: 13, resize: "vertical" }} placeholder="Notas…" />
+          </FieldLabel>
+        </div>
+
+        <div style={{ padding: "16px 28px", borderTop: "1px solid " + PALETTE.faint, display: "flex", justifyContent: "flex-end", gap: 10, background: PALETTE.warm }}>
+          <button onClick={onClose} style={{ padding: "10px 20px", borderRadius: 8, fontSize: 13, border: "1px solid " + PALETTE.faint, background: "transparent", cursor: "pointer", color: PALETTE.soft }}>Cancelar</button>
+          <button onClick={function() { if (form.name.trim()) onSave(form); }}
+            style={{ padding: "10px 24px", borderRadius: 8, fontSize: 14, fontWeight: 500, border: "none", background: PALETTE.nectarine, color: "#fff", cursor: "pointer", fontFamily: SERIF, display: "flex", alignItems: "center", gap: 6 }}>
+            <Save size={14} />Guardar
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SettingsPanel({ owners, addOwner, mergeOwners, onClose }) {
+  var [newName, setNewName] = useState("");
+  var [mergeFrom, setMergeFrom] = useState("");
+  var [mergeTo, setMergeTo] = useState("");
+
+  return (
+    <div style={{ position: "absolute", inset: 0, zIndex: 100, background: "rgba(44,41,38,0.5)", display: "flex", justifyContent: "center", paddingTop: 60, minHeight: "100vh" }}
+      onClick={onClose}>
+      <div onClick={function(e) { e.stopPropagation(); }}
+        style={{ background: PALETTE.bone, borderRadius: 16, border: "1px solid " + PALETTE.faint, width: "100%", maxWidth: 440, height: "fit-content", boxShadow: "0 24px 80px rgba(0,0,0,0.15)" }}>
+
+        <div style={{ padding: "20px 24px", borderBottom: "1px solid " + PALETTE.faint, display: "flex", justifyContent: "space-between", alignItems: "center", background: PALETTE.warm }}>
+          <h3 style={{ fontFamily: SERIF, fontSize: 18, fontWeight: 400, margin: 0 }}>Gestión de equipo</h3>
+          <button onClick={onClose} style={{ border: "none", background: "transparent", cursor: "pointer", color: PALETTE.muted }}><X size={18} /></button>
+        </div>
+
+        <div style={{ padding: "20px 24px" }}>
+          <div style={{ fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: ".8px", color: PALETTE.muted, fontFamily: "var(--font-mono)", marginBottom: 8 }}>Miembros</div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 20 }}>
+            {owners.map(function(o) { return <Badge key={o} color={PALETTE.lagune} bg={PALETTE.lagune + "12"}>{o}</Badge>; })}
+          </div>
+
+          <div style={{ fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: ".8px", color: PALETTE.muted, fontFamily: "var(--font-mono)", marginBottom: 8 }}>Añadir miembro</div>
+          <div style={{ display: "flex", gap: 6, marginBottom: 20 }}>
+            <input value={newName} onChange={function(e) { setNewName(e.target.value); }} placeholder="Nombre…"
+              style={{ flex: 1, fontSize: 13, padding: "8px 12px", borderRadius: 8, border: "1px solid " + PALETTE.faint }} />
+            <button onClick={function() { if (newName.trim()) { addOwner(newName.trim()); setNewName(""); } }}
+              style={{ padding: "8px 14px", borderRadius: 8, fontSize: 12, fontWeight: 500, background: PALETTE.lagune, color: "#fff", border: "none", cursor: "pointer" }}>Añadir</button>
+          </div>
+
+          <div style={{ fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: ".8px", color: PALETTE.muted, fontFamily: "var(--font-mono)", marginBottom: 8 }}>Fusionar</div>
+          <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
+            <SelectField value={mergeFrom} onChange={setMergeFrom} options={owners} placeholder="De…" style={{ flex: 1, minWidth: 80 }} />
+            <ArrowRight size={14} style={{ color: PALETTE.muted }} />
+            <SelectField value={mergeTo} onChange={setMergeTo} options={owners} placeholder="A…" style={{ flex: 1, minWidth: 80 }} />
+            <button onClick={function() { if (mergeFrom && mergeTo && mergeFrom !== mergeTo) { mergeOwners(mergeFrom, mergeTo); setMergeFrom(""); setMergeTo(""); } }}
+              style={{ padding: "8px 14px", borderRadius: 8, fontSize: 12, fontWeight: 500, background: PALETTE.nectarine, color: "#fff", border: "none", cursor: "pointer" }}>Fusionar</button>
+          </div>
+          <div style={{ fontSize: 11, color: PALETTE.muted, marginTop: 8 }}>
+            Tareas de «{mergeFrom || "…"}» pasarán a «{mergeTo || "…"}»
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function App() {
+  var [tasks, setTasks] = useState([]);
+  var [loading, setLoading] = useState(true);
+  var [isConnected, setIsConnected] = useState(false);
+  var [usersOnline, setUsersOnline] = useState(0);
+  var [view, setView] = useState("dashboard");
+  var [search, setSearch] = useState("");
+  var [fWs, setFWs] = useState("");
+  var [fSt, setFSt] = useState("");
+  var [fOw, setFOw] = useState("");
+  var [fPr, setFPr] = useState("");
+  var [modal, setModal] = useState(null);
+  var [sortKey, setSortKey] = useState("endDate");
+  var [sortDir, setSortDir] = useState(1);
+  var [expandedWs, setExpandedWs] = useState(function() { return Object.fromEntries(WORKSTREAMS.map(function(w) { return [w, true]; })); });
+  var [owners, setOwners] = useState(INITIAL_OWNERS);
+  var [showSettings, setShowSettings] = useState(false);
+  var [showHistory, setShowHistory] = useState(false);
+  var [historyTaskId, setHistoryTaskId] = useState(null);
+
+  // Conectar a Socket.IO y Supabase
+  useEffect(function() {
+    // Inicializar Socket.IO
+    if (BACKEND_URL) {
+      socket = io(BACKEND_URL);
+
+      socket.on('connect', () => {
+        console.log('✅ Conectado al servidor');
+        setIsConnected(true);
+        socket.emit('user:join', { name: 'Usuario', timestamp: new Date() });
+      });
+
+      socket.on('disconnect', () => {
+        console.log('❌ Desconectado del servidor');
+        setIsConnected(false);
+      });
+
+      socket.on('users:update', (users) => {
+        setUsersOnline(users.length);
+      });
+
+      socket.on('task:updated', (task) => {
+        setTasks(prev => {
+          const existing = prev.find(t => t.id === task.id);
+          if (existing) {
+            return prev.map(t => t.id === task.id ? task : t);
+          }
+          return [...prev, task];
+        });
+      });
+
+      socket.on('task:created', (task) => {
+        setTasks(prev => [...prev, task]);
+      });
+
+      socket.on('task:deleted', (taskId) => {
+        setTasks(prev => prev.filter(t => t.id !== taskId));
+      });
+    }
+
+    // Cargar datos iniciales desde Supabase
+    loadData();
+
+    return () => {
+      if (socket) socket.disconnect();
+    };
+  }, []);
+
+  async function loadData() {
+    try {
+      if (supabase) {
+        const { data, error } = await supabase.from('tasks').select('*');
+        if (error) throw error;
+        setTasks(data || []);
+        console.log('✅ Datos cargados desde Supabase:', data?.length, 'tareas');
+      }
+    } catch (error) {
+      console.error('Error cargando datos:', error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  var save = useCallback(async function(newTasks, newOwners) {
+    var nt = newTasks || tasks;
+    var no = newOwners || owners;
+    setTasks(nt);
+    if (newOwners) setOwners(no);
+  }, [tasks, owners]);
+
+  function updateTask(id, changes) {
+    const updated = tasks.map(t => t.id === id ? { ...t, ...changes } : t);
+    setTasks(updated);
+
+    const task = updated.find(t => t.id === id);
+    if (socket && socket.connected) {
+      socket.emit('task:update', task);
+    }
+  }
+
+  function deleteTask(id) {
+    if (confirm("¿Eliminar tarea?")) {
+      setTasks(tasks.filter(t => t.id !== id));
+      if (socket && socket.connected) {
+        socket.emit('task:delete', id);
+      }
+    }
+  }
+
+  function addTask(t) {
+    const newTask = { ...t, id: makeId(), deps: t.deps || [] };
+    setTasks([...tasks, newTask]);
+    if (socket && socket.connected) {
+      socket.emit('task:update', newTask);
+    }
+  }
+
+  function handleHistoryRestore(restoredTask) {
+    // Cuando se restaura una tarea desde el historial, actualizar en la UI
+    setTasks(prev => prev.map(t => t.id === restoredTask.id ? restoredTask : t));
+    if (socket && socket.connected) {
+      socket.emit('task:update', restoredTask);
+    }
+  }
+
+  function handleMergeOwners(from, to) {
+    if (!from || !to || from === to) return;
+    var nt = tasks.map(function(t) { return t.owner === from ? { ...t, owner: to } : t; });
+    var no = owners.filter(function(o) { return o !== from; });
+    save(nt, no); setOwners(no);
+  }
+
+  function handleAddOwner(name) {
+    if (name && !owners.includes(name)) { var no = [...owners, name]; setOwners(no); save(tasks, no); }
+  }
+
+  var filtered = useMemo(function() {
+    var r = tasks;
+    if (search) { var s = search.toLowerCase(); r = r.filter(function(t) { return t.name.toLowerCase().includes(s) || t.owner.toLowerCase().includes(s); }); }
+    if (fWs) r = r.filter(function(t) { return t.ws === fWs; });
+    if (fSt) r = r.filter(function(t) { return t.status === fSt; });
+    if (fOw) r = r.filter(function(t) { return t.owner === fOw; });
+    if (fPr) r = r.filter(function(t) { return t.priority === fPr; });
+    return [...r].sort(function(a, b) { var av = a[sortKey] || "", bv = b[sortKey] || ""; return av < bv ? -sortDir : av > bv ? sortDir : 0; });
+  }, [tasks, search, fWs, fSt, fOw, fPr, sortKey, sortDir]);
+
+  var kpis = useMemo(function() {
+    var overdue = tasks.filter(function(t) { return t.status !== "Hecho" && toDate(t.endDate) < TODAY; });
+    var thisWeek = tasks.filter(function(t) { var d = daysLeft(t.endDate); return t.status !== "Hecho" && d >= 0 && d <= 7; });
+    var done = tasks.filter(function(t) { return t.status === "Hecho"; }).length;
+    var milestones = tasks.filter(function(t) { return t.isMilestone && t.status !== "Hecho"; }).sort(function(a, b) { return a.endDate.localeCompare(b.endDate); });
+    var byWs = WORKSTREAMS.map(function(ws, i) {
+      var all = tasks.filter(function(t) { return t.ws === ws; });
+      var dn = all.filter(function(t) { return t.status === "Hecho"; }).length;
+      return { ws: ws, total: all.length, done: dn, pct: all.length ? Math.round(dn / all.length * 100) : 0, color: WS_COLORS[i] };
+    });
+    return { overdue: overdue, thisWeek: thisWeek, done: done, total: tasks.length, milestones: milestones, byWs: byWs, pct: tasks.length ? Math.round(done / tasks.length * 100) : 0 };
+  }, [tasks]);
+
+  var depsMap = useMemo(function() {
+    var m = {};
+    tasks.forEach(function(t) { (t.deps || []).forEach(function(dep) { if (!m[dep]) m[dep] = []; m[dep].push(t.id); }); });
+    return m;
+  }, [tasks]);
+
+  if (loading) return <div style={{ padding: 60, textAlign: "center", color: PALETTE.muted, fontFamily: SERIF, fontSize: 18 }}>Cargando…</div>;
+
+  var newTaskDefaults = { name: "", ws: WORKSTREAMS[0], status: "Pendiente", priority: "Alta", startDate: "2026-04-14", endDate: "2026-04-21", owner: owners[0] || "", isMilestone: false, risk: "", notes: "", deps: [] };
+
+  return (
+    <div style={{ fontFamily: "var(--font-sans)", color: PALETTE.ink, maxWidth: 1280, margin: "0 auto", padding: "0 16px 80px", position: "relative", minHeight: "100vh" }}>
+      <style>{"@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}"}</style>
+      <h2 className="sr-only">NEO DMSTK project tracker</h2>
+
+      {modal ? <TaskModal task={modal} owners={owners} addOwner={handleAddOwner} tasks={tasks} onSave={function(t) { if (t.id) updateTask(t.id, t); else addTask(t); setModal(null); }} onClose={function() { setModal(null); }} /> : null}
+      {showSettings ? <SettingsPanel owners={owners} addOwner={handleAddOwner} mergeOwners={handleMergeOwners} onClose={function() { setShowSettings(false); }} /> : null}
+      {showHistory ? <HistoryViewer taskId={historyTaskId} apiUrl={BACKEND_URL} onClose={function() { setShowHistory(false); setHistoryTaskId(null); }} onRestore={handleHistoryRestore} /> : null}
+
+      <header style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 0", borderBottom: "1px solid " + PALETTE.faint, marginBottom: 24, flexWrap: "wrap", gap: 10 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <div style={{ width: 10, height: 10, borderRadius: "50%", background: PALETTE.mostaza }} />
+          <span style={{ fontFamily: SERIF, fontSize: 15, fontWeight: 700, letterSpacing: 1 }}>NEO <span style={{ color: PALETTE.nectarine }}>DMSTK</span></span>
+          <span style={{ fontSize: 11, color: PALETTE.muted, fontFamily: "var(--font-mono)", borderLeft: "1px solid " + PALETTE.faint, paddingLeft: 10 }}>Project tracker</span>
+        </div>
+        <ConnectionStatus isConnected={isConnected} usersOnline={usersOnline} />
+        <nav style={{ display: "flex", gap: 2, background: PALETTE.warm, borderRadius: 8, padding: 2 }}>
+          {[["executive", TrendingUp, "Ejecutivo"], ["dashboard", LayoutDashboard, "Dashboard"], ["tasks", List, "Tareas"], ["timeline", CalendarRange, "Timeline"]].map(function(item) {
+            var v = item[0], Ic = item[1], lb = item[2];
+            return (
+              <button key={v} onClick={function() { setView(v); }}
+                style={{ display: "flex", alignItems: "center", gap: 5, padding: "7px 16px", borderRadius: 6, fontSize: 12, fontWeight: view === v ? 500 : 400, background: view === v ? PALETTE.bone : "transparent", border: "none", color: view === v ? PALETTE.ink : PALETTE.muted, cursor: "pointer" }}>
+                <Ic size={14} />{lb}
+              </button>
+            );
+          })}
+        </nav>
+        <div style={{ display: "flex", gap: 6 }}>
+          <button onClick={function() { setShowSettings(true); }} style={{ display: "flex", alignItems: "center", padding: 7, borderRadius: 6, border: "0.5px solid " + PALETTE.faint, background: "transparent", cursor: "pointer", color: PALETTE.muted }}><Users size={14} /></button>
+          <button onClick={function() { setModal(newTaskDefaults); }} style={{ display: "flex", alignItems: "center", gap: 4, padding: "7px 14px", borderRadius: 8, fontSize: 12, fontWeight: 500, background: PALETTE.nectarine, color: "#fff", border: "none", cursor: "pointer" }}><Plus size={14} />Nueva tarea</button>
+          <button onClick={function() { setShowHistory(!showHistory); }} style={{ display: "flex", alignItems: "center", padding: 7, borderRadius: 6, border: "0.5px solid " + PALETTE.faint, background: showHistory ? PALETTE.lagune + "15" : "transparent", cursor: "pointer", color: showHistory ? PALETTE.lagune : PALETTE.muted }}><History size={13} /></button>
+        </div>
+      </header>
+
+      {view !== "dashboard" && view !== "executive" ? (
+        <div style={{ display: "flex", gap: 6, marginBottom: 18, flexWrap: "wrap", alignItems: "center" }}>
+          <div style={{ position: "relative", flex: "1 1 180px" }}>
+            <Search size={14} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: PALETTE.muted }} />
+            <input value={search} onChange={function(e) { setSearch(e.target.value); }} placeholder="Buscar…"
+              style={{ width: "100%", paddingLeft: 30, fontSize: 13, borderRadius: 8, border: "0.5px solid " + PALETTE.faint, padding: "8px 12px 8px 30px" }} />
+          </div>
+          <SelectField value={fWs} onChange={setFWs} options={WORKSTREAMS} placeholder="Área" />
+          <SelectField value={fSt} onChange={setFSt} options={STATUSES} placeholder="Estado" />
+          <SelectField value={fOw} onChange={setFOw} options={owners} placeholder="Owner" />
+          <SelectField value={fPr} onChange={setFPr} options={PRIORITIES} placeholder="Prioridad" />
+          {(fWs || fSt || fOw || fPr || search) ? (
+            <button onClick={function() { setFWs(""); setFSt(""); setFOw(""); setFPr(""); setSearch(""); }}
+              style={{ fontSize: 11, padding: "7px 12px", cursor: "pointer", border: "0.5px solid " + PALETTE.faint, borderRadius: 6, background: "transparent", color: PALETTE.muted }}>Limpiar</button>
+          ) : null}
+        </div>
+      ) : null}
+
+      {view === "executive" ? <ExecutiveDashboard tasks={tasks} onTaskClick={function(task) { setModal(task); }} onWorkstreamClick={function(ws) { setFWs(ws.name); setView("tasks"); }} /> : null}
+      {view === "dashboard" ? <DashboardView kpis={kpis} setModal={setModal} /> : null}
+      {view === "tasks" ? <TasksView tasks={filtered} sortKey={sortKey} sortDir={sortDir} toggleSort={function(k) { if (sortKey === k) setSortDir(-sortDir); else { setSortKey(k); setSortDir(1); } }} updateTask={updateTask} deleteTask={deleteTask} setModal={setModal} depsMap={depsMap} /> : null}
+      {view === "timeline" ? <TimelineView tasks={filtered} expandedWs={expandedWs} setExpandedWs={setExpandedWs} /> : null}
+
+      {/* Chatbot del agente IA */}
+      <AgentChat apiUrl={BACKEND_URL} />
+    </div>
+  );
+}

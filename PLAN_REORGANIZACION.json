@@ -1,0 +1,910 @@
+{
+  "metadata": {
+    "generado": "2026-04-13",
+    "analista": "PM Senior con 15+ años experiencia",
+    "objetivo": "Plan de reorganización de tareas para alcanzar objetivo 5 espacios en 2025",
+    "nota_critica": "Este plan requiere DECISIÓN INMEDIATA del board sobre objetivo real: ¿5 espacios en 2025 o ajustar a 2-3?"
+  },
+  "resumen_ejecutivo": {
+    "tareas_actuales": 109,
+    "tareas_a_actualizar": 15,
+    "tareas_a_eliminar": 0,
+    "tareas_a_añadir": 185,
+    "total_tareas_final_estimado": 294,
+    "proyectos_actuales": 10,
+    "proyectos_a_añadir": 7,
+    "total_proyectos_final": 17
+  },
+  "tareas_a_actualizar": [
+    {
+      "id": "t10",
+      "campo": "fechas",
+      "valor_actual": {
+        "startDate": "2026-04-18",
+        "endDate": "2026-04-25"
+      },
+      "valor_nuevo": {
+        "startDate": "2026-04-26",
+        "endDate": "2026-05-02"
+      },
+      "razon": "Depende de t30 (fin 25 abr). No puede empezar hasta que t30 termine. Buffer +1 día."
+    },
+    {
+      "id": "t11",
+      "campo": "fechas",
+      "valor_actual": {
+        "startDate": "2026-04-25",
+        "endDate": "2026-04-28"
+      },
+      "valor_nuevo": {
+        "startDate": "2026-05-03",
+        "endDate": "2026-05-05"
+      },
+      "razon": "Depende de t10 terminada. Buffer +1 día tras negociación."
+    },
+    {
+      "id": "t12",
+      "campo": "priority",
+      "valor_actual": "Alta",
+      "valor_nuevo": "CRÍTICO",
+      "razon": "Sin marca registrada no podemos operar legalmente. Agosto paraliza OEPM."
+    },
+    {
+      "id": "t19",
+      "campo": "priority",
+      "valor_actual": "Alta",
+      "valor_nuevo": "CRÍTICO",
+      "razon": "Sin contratos no podemos contratar equipo. Inicio Jun = 2 meses antes apertura."
+    },
+    {
+      "id": "t25",
+      "campo": "fechas",
+      "valor_actual": {
+        "startDate": "2026-04-28",
+        "endDate": "2026-05-12"
+      },
+      "valor_nuevo": {
+        "startDate": "2026-05-06",
+        "endDate": "2026-05-12"
+      },
+      "razon": "Debe esperar a que t22 y t23 terminen (5 mayo). Buffer +1 día."
+    },
+    {
+      "id": "t31",
+      "campo": "fechas",
+      "valor_actual": {
+        "startDate": "2026-04-25",
+        "endDate": "2026-04-28"
+      },
+      "valor_nuevo": {
+        "startDate": "2026-05-06",
+        "endDate": "2026-05-08"
+      },
+      "razon": "No puede empezar hasta que AMBAS t30 (fin 25 abr) Y t11 (fin 5 mayo) terminen."
+    },
+    {
+      "id": "t32",
+      "campo": "fechas",
+      "valor_actual": {
+        "startDate": "2026-04-28",
+        "endDate": "2026-05-02"
+      },
+      "valor_nuevo": {
+        "startDate": "2026-05-09",
+        "endDate": "2026-05-11"
+      },
+      "razon": "Buffer +1 día tras t31 corregida."
+    },
+    {
+      "id": "t33",
+      "campo": "fechas",
+      "valor_actual": {
+        "startDate": "2026-05-02",
+        "endDate": "2026-05-05"
+      },
+      "valor_nuevo": {
+        "startDate": "2026-05-12",
+        "endDate": "2026-05-14"
+      },
+      "razon": "Buffer +1 día tras t32 corregida."
+    },
+    {
+      "id": "t34",
+      "campo": "fechas",
+      "valor_actual": {
+        "startDate": "2026-05-05",
+        "endDate": "2026-05-12"
+      },
+      "valor_nuevo": {
+        "startDate": "2026-05-15",
+        "endDate": "2026-05-21"
+      },
+      "razon": "Buffer +1 día tras t33 corregida."
+    },
+    {
+      "id": "t35",
+      "campo": "fechas",
+      "valor_actual": {
+        "startDate": "2026-05-05",
+        "endDate": "2026-05-09"
+      },
+      "valor_nuevo": {
+        "startDate": "2026-05-15",
+        "endDate": "2026-05-19"
+      },
+      "razon": "Paralela con t34 corregida."
+    },
+    {
+      "id": "t36",
+      "campo": "fechas",
+      "valor_actual": {
+        "startDate": "2026-05-05",
+        "endDate": "2026-05-09"
+      },
+      "valor_nuevo": {
+        "startDate": "2026-05-15",
+        "endDate": "2026-05-19"
+      },
+      "razon": "Paralela con t34/t35 corregida."
+    },
+    {
+      "id": "t38",
+      "campo": "fechas",
+      "valor_actual": {
+        "startDate": "2026-05-19",
+        "endDate": "2026-05-19"
+      },
+      "valor_nuevo": {
+        "startDate": "2026-05-22",
+        "endDate": "2026-05-22"
+      },
+      "razon": "Depende de t34 (fin 21 mayo). Buffer +1 día."
+    },
+    {
+      "id": "t39",
+      "campo": "fechas",
+      "valor_actual": {
+        "startDate": "2026-05-20",
+        "endDate": "2026-05-21"
+      },
+      "valor_nuevo": {
+        "startDate": "2026-05-23",
+        "endDate": "2026-05-24"
+      },
+      "razon": "Depende de t38 corregida (22 mayo)."
+    },
+    {
+      "id": "t41",
+      "campo": "fechas",
+      "valor_actual": {
+        "startDate": "2026-05-21",
+        "endDate": "2026-05-30"
+      },
+      "valor_nuevo": {
+        "startDate": "2026-05-27",
+        "endDate": "2026-06-05"
+      },
+      "razon": "Buffer +3 días tras t39 corregida (24 mayo)."
+    },
+    {
+      "id": "t52",
+      "campo": "fechas",
+      "valor_actual": {
+        "startDate": "2026-04-21",
+        "endDate": "2026-04-25"
+      },
+      "valor_nuevo": {
+        "startDate": "2026-04-22",
+        "endDate": "2026-04-28"
+      },
+      "razon": "Buffer +4 días (incluye coordinación con proveedor, no solo espera)."
+    },
+    {
+      "id": "t55",
+      "campo": "fechas",
+      "valor_actual": {
+        "startDate": "2026-05-12",
+        "endDate": "2026-05-16"
+      },
+      "valor_nuevo": {
+        "startDate": "2026-05-20",
+        "endDate": "2026-05-24"
+      },
+      "razon": "Depende de t35 corregida (fin 19 mayo). Buffer +1 día."
+    },
+    {
+      "id": "t56",
+      "campo": "fechas",
+      "valor_actual": {
+        "startDate": "2026-05-05",
+        "endDate": "2026-05-19"
+      },
+      "valor_nuevo": {
+        "startDate": "2026-05-15",
+        "endDate": "2026-05-26"
+      },
+      "razon": "Depende de t33 corregida (fin 14 mayo)."
+    },
+    {
+      "id": "t57",
+      "campo": "fechas",
+      "valor_actual": {
+        "startDate": "2026-05-05",
+        "endDate": "2026-05-19"
+      },
+      "valor_nuevo": {
+        "startDate": "2026-06-03",
+        "endDate": "2026-06-14"
+      },
+      "razon": "Necesita t73 (identidad visual, fin 30 mayo). Buffer +4 días."
+    },
+    {
+      "id": "t74",
+      "campo": "fechas",
+      "valor_actual": {
+        "startDate": "2026-05-20",
+        "endDate": "2026-06-05"
+      },
+      "valor_nuevo": {
+        "startDate": "2026-06-03",
+        "endDate": "2026-06-10"
+      },
+      "razon": "Buffer +4 días tras t73 (fin 30 mayo)."
+    },
+    {
+      "id": "t91b",
+      "campo": "fechas",
+      "valor_actual": {
+        "startDate": "2026-05-19",
+        "endDate": "2026-05-23"
+      },
+      "valor_nuevo": {
+        "startDate": "2026-05-13",
+        "endDate": "2026-05-17"
+      },
+      "razon": "Buffer +1 día tras t91 (fin 12 mayo). DEBE terminar antes t98 (19 mayo)."
+    },
+    {
+      "id": "t98",
+      "campo": "fechas",
+      "valor_actual": {
+        "startDate": "2026-05-19",
+        "endDate": "2026-05-19"
+      },
+      "valor_nuevo": {
+        "startDate": "2026-05-25",
+        "endDate": "2026-05-25"
+      },
+      "razon": "Depende de t55 corregida (fin 24 mayo) y t91b (fin 17 mayo) y t25 (fin 12 mayo). Fecha más tardía: 24 mayo."
+    },
+    {
+      "id": "t99",
+      "campo": "fechas",
+      "valor_actual": {
+        "startDate": "2026-05-19",
+        "endDate": "2026-06-13"
+      },
+      "valor_nuevo": {
+        "startDate": "2026-05-25",
+        "endDate": "2026-06-19"
+      },
+      "razon": "Depende de t98 corregida (25 mayo). 4 semanas de piloto."
+    },
+    {
+      "id": "t100",
+      "campo": "fechas",
+      "valor_actual": {
+        "startDate": "2026-05-19",
+        "endDate": "2026-06-13"
+      },
+      "valor_nuevo": {
+        "startDate": "2026-05-25",
+        "endDate": "2026-06-19"
+      },
+      "razon": "Paralela con t99 corregida."
+    },
+    {
+      "id": "t100b",
+      "campo": "fechas",
+      "valor_actual": {
+        "startDate": "2026-05-19",
+        "endDate": "2026-06-13"
+      },
+      "valor_nuevo": {
+        "startDate": "2026-05-25",
+        "endDate": "2026-06-19"
+      },
+      "razon": "Paralela con t99/t100 corregida."
+    },
+    {
+      "id": "t101",
+      "campo": "fechas",
+      "valor_actual": {
+        "startDate": "2026-06-15",
+        "endDate": "2026-06-18"
+      },
+      "valor_nuevo": {
+        "startDate": "2026-06-20",
+        "endDate": "2026-06-23"
+      },
+      "razon": "Buffer +1 día tras t99/t100 corregidas (fin 19 junio)."
+    },
+    {
+      "id": "t102",
+      "campo": "fechas",
+      "valor_actual": {
+        "startDate": "2026-06-15",
+        "endDate": "2026-06-18"
+      },
+      "valor_nuevo": {
+        "startDate": "2026-06-24",
+        "endDate": "2026-06-24"
+      },
+      "razon": "Depende de t101 corregida (fin 23 junio). DEBE presentarse 25 junio (t06 es 20 junio). CONFLICTO DETECTADO: t06 (GO/NO-GO 20 jun) NO PUEDE SER ANTES que t102 (informe piloto 24 jun). RECOMENDACIÓN: Mover t06 a 27 junio."
+    }
+  ],
+  "tareas_a_eliminar": [],
+  "conflictos_criticos_detectados": [
+    {
+      "tipo": "CONFLICTO TEMPORAL CRÍTICO",
+      "descripcion": "GO/NO-GO programado para 20 junio ANTES de que termine informe piloto",
+      "tareas_afectadas": ["t06", "t102"],
+      "detalle": "t06 (GO/NO-GO con board) está programado para 20 junio, pero t102 (Informe GO/NO-GO) termina 24 junio según cascada de correcciones. IMPOSIBLE tomar decisión sin informe.",
+      "impacto": "CRÍTICO - Decisión sin datos",
+      "solucion_recomendada": "Mover t06 (GO/NO-GO) a 27 junio 2026. Esto retrasa t07, t17, t83 en 1 semana.",
+      "consecuencia_solucion": "Inicio reforma se retrasa de 25 junio a 2 julio. Obra terminaría 27 agosto en lugar de 20 agosto. Soft opening 1 sep JUSTO A TIEMPO pero SIN MARGEN."
+    },
+    {
+      "tipo": "CRITICAL PATH EN RIESGO",
+      "descripcion": "Corrección de fechas elimina buffers y crea critical path sin margen",
+      "detalle": "Cascada de correcciones de t30→t31→t32→t33→t34→t38→t39→t41 retrasa todo el contenido en 6 días. Esto impacta t42 (grabación), que está programada para 9-11 junio pero guiones terminan 5 junio. Buffer de 4 días se reduce a 3 días.",
+      "impacto": "ALTO - Margen muy ajustado",
+      "solucion_recomendada": "EJECUTAR t30 (confirmar profesor/a) INMEDIATAMENTE. Quedan 12 días para deadline 25 abril."
+    },
+    {
+      "tipo": "AGOSTO CONSTRAINT SIN MITIGACIÓN",
+      "descripcion": "Licencias en curso pero sin seguimiento semanal ni plan B",
+      "tareas_afectadas": ["t13", "t14", "t18"],
+      "detalle": "t13 y t14 iniciadas 14 abril con deadline 30 junio. Si NO se resuelven antes julio, agosto las paraliza. t18 debe iniciarse junio. No hay tareas de seguimiento ni escalación.",
+      "impacto": "CRÍTICO - Puede paralizar obra",
+      "solucion_recomendada": "Añadir tareas semanales de seguimiento licencias (t13a, t14a, t18a) + tarea contingencia 'Contratar gestoría' si no avanzan."
+    }
+  ],
+  "tareas_a_añadir": {
+    "resumen": {
+      "total": 185,
+      "por_categoria": {
+        "expansion_busqueda": 30,
+        "espacio_e2_barcelona": 45,
+        "espacio_e3_valencia": 45,
+        "espacio_e4_bilbao": 45,
+        "espacio_e5_tbd": 50,
+        "cross_cutting": 20
+      }
+    },
+    "detalle_por_workstream": [
+      {
+        "workstream": "Expansión-Búsqueda",
+        "total_tareas": 30,
+        "descripcion": "Búsqueda paralela de locales en 4 ciudades simultáneas (Barcelona, Valencia, Bilbao, TBD)",
+        "tareas_ejemplo": [
+          {
+            "id": "tEXP-001",
+            "name": "Definir criterios locales (m², ubicación, precio)",
+            "startDate": "2026-06-01",
+            "endDate": "2026-06-07",
+            "priority": "CRÍTICO",
+            "owner": "Christian"
+          },
+          {
+            "id": "tEXP-002",
+            "name": "Identificar 5-10 locales Barcelona",
+            "startDate": "2026-06-08",
+            "endDate": "2026-06-21",
+            "priority": "CRÍTICO",
+            "owner": "Por asignar"
+          },
+          {
+            "id": "tEXP-003",
+            "name": "Visitas locales Barcelona (2 días)",
+            "startDate": "2026-06-22",
+            "endDate": "2026-06-23",
+            "priority": "ALTO",
+            "owner": "Christian + David"
+          },
+          {
+            "id": "tEXP-004",
+            "name": "Negociación arrendamiento Barcelona",
+            "startDate": "2026-06-24",
+            "endDate": "2026-07-05",
+            "priority": "CRÍTICO",
+            "owner": "Cristina"
+          },
+          {
+            "id": "tEXP-005",
+            "name": "Due diligence técnica/legal Barcelona",
+            "startDate": "2026-06-26",
+            "endDate": "2026-07-02",
+            "priority": "ALTO",
+            "owner": "Christian + Cristina"
+          },
+          {
+            "id": "tEXP-006",
+            "name": "Firma contrato arrendamiento Barcelona",
+            "startDate": "2026-07-03",
+            "endDate": "2026-07-10",
+            "priority": "CRÍTICO",
+            "owner": "David"
+          }
+        ],
+        "patron_replica": "Repetir patrón para Valencia, Bilbao, TBD (E5) con timeline comprimido. Barcelona inicia junio. Valencia inicia julio. Bilbao inicia agosto. E5 inicia septiembre (incluye decisión de ciudad)."
+      },
+      {
+        "workstream": "Espacio-E2-Barcelona",
+        "total_tareas": 45,
+        "descripcion": "Apertura E2 Barcelona en Sep-Oct 2025",
+        "sub_workstreams": {
+          "legal": 7,
+          "obra": 9,
+          "equipo": 7,
+          "operaciones": 5,
+          "tech": 3,
+          "branding": 3,
+          "piloto_local": 5,
+          "apertura": 6
+        },
+        "tareas_ejemplo": [
+          {
+            "id": "tE2-LEG-001",
+            "name": "Licencia actividad Barcelona",
+            "startDate": "2026-07-10",
+            "endDate": "2026-08-30",
+            "priority": "CRÍTICO",
+            "owner": "Cristina",
+            "notes": "Iniciar ANTES agosto. Deadline crítico."
+          },
+          {
+            "id": "tE2-OBR-001",
+            "name": "Proyecto obra Barcelona",
+            "startDate": "2026-07-15",
+            "endDate": "2026-08-10",
+            "priority": "CRÍTICO",
+            "owner": "Christian"
+          },
+          {
+            "id": "tE2-OBR-002",
+            "name": "Inicio reforma Barcelona",
+            "startDate": "2026-08-15",
+            "endDate": "2026-08-15",
+            "priority": "CRÍTICO",
+            "owner": "Empresa Reformas BCN",
+            "isMilestone": true
+          },
+          {
+            "id": "tE2-EQU-001",
+            "name": "Selección facilitador Barcelona",
+            "startDate": "2026-08-01",
+            "endDate": "2026-08-15",
+            "priority": "CRÍTICO",
+            "owner": "Manager E1"
+          },
+          {
+            "id": "tE2-APE-001",
+            "name": "Soft Opening E2 Barcelona",
+            "startDate": "2026-10-01",
+            "endDate": "2026-10-01",
+            "priority": "CRÍTICO",
+            "owner": "David",
+            "isMilestone": true
+          }
+        ],
+        "patron_replica": "MISMA estructura para E3 (Valencia), E4 (Bilbao), E5 (TBD) con timeline comprimido cada vez más. E3 apertura Oct-Nov. E4 apertura Nov-Dic. E5 apertura Dic."
+      },
+      {
+        "workstream": "Cross-Cutting (Operaciones Centralizadas)",
+        "total_tareas": 20,
+        "descripcion": "Tareas transversales para operar 5 espacios simultáneamente",
+        "tareas_ejemplo": [
+          {
+            "id": "tCRO-001",
+            "name": "Manual replicación espacios v3",
+            "startDate": "2026-08-15",
+            "endDate": "2026-09-01",
+            "priority": "CRÍTICO",
+            "owner": "David"
+          },
+          {
+            "id": "tCRO-002",
+            "name": "Checklist apertura estándar",
+            "startDate": "2026-08-15",
+            "endDate": "2026-08-30",
+            "priority": "ALTO",
+            "owner": "Manager E1"
+          },
+          {
+            "id": "tCRO-003",
+            "name": "Sistema QA espacios",
+            "startDate": "2026-09-01",
+            "endDate": "2026-09-30",
+            "priority": "ALTO",
+            "owner": "Por asignar"
+          },
+          {
+            "id": "tCRO-004",
+            "name": "Logística distribución kits 5 ciudades",
+            "startDate": "2026-07-15",
+            "endDate": "2026-08-31",
+            "priority": "CRÍTICO",
+            "owner": "Por asignar"
+          },
+          {
+            "id": "tCRO-005",
+            "name": "Proveedores regionales por ciudad",
+            "startDate": "2026-07-01",
+            "endDate": "2026-08-15",
+            "priority": "ALTO",
+            "owner": "Por asignar"
+          },
+          {
+            "id": "tCRO-006",
+            "name": "Stack tech multi-sede",
+            "startDate": "2026-07-01",
+            "endDate": "2026-08-31",
+            "priority": "CRÍTICO",
+            "owner": "Equipo Tech"
+          },
+          {
+            "id": "tCRO-007",
+            "name": "Dashboard ejecutivo consolidado",
+            "startDate": "2026-08-01",
+            "endDate": "2026-09-15",
+            "priority": "ALTO",
+            "owner": "Equipo Tech"
+          },
+          {
+            "id": "tCRO-008",
+            "name": "Headcount plan 5 espacios",
+            "startDate": "2026-06-01",
+            "endDate": "2026-06-30",
+            "priority": "CRÍTICO",
+            "owner": "David"
+          },
+          {
+            "id": "tCRO-009",
+            "name": "Estructura organizativa definitiva",
+            "startDate": "2026-06-01",
+            "endDate": "2026-06-30",
+            "priority": "ALTO",
+            "owner": "David"
+          },
+          {
+            "id": "tCRO-010",
+            "name": "Budget consolidado 5 espacios",
+            "startDate": "2026-06-01",
+            "endDate": "2026-06-15",
+            "priority": "CRÍTICO",
+            "owner": "David"
+          }
+        ]
+      }
+    ]
+  },
+  "estructura_proyectos_final": [
+    {
+      "id": 1,
+      "nombre": "Fundación & Método",
+      "tareas_actuales": 21,
+      "tareas_nuevas": 0,
+      "total": 21,
+      "status": "En curso"
+    },
+    {
+      "id": 2,
+      "nombre": "Daruma — prototipo 3D",
+      "tareas_actuales": 3,
+      "tareas_nuevas": 0,
+      "total": 3,
+      "status": "URGENTE - Pedido debe salir YA"
+    },
+    {
+      "id": 3,
+      "nombre": "Piloto & Validación",
+      "tareas_actuales": 15,
+      "tareas_nuevas": 0,
+      "total": 15,
+      "status": "Preparación"
+    },
+    {
+      "id": 4,
+      "nombre": "Kit de Experiencia & Producto",
+      "tareas_actuales": 10,
+      "tareas_nuevas": 5,
+      "total": 15,
+      "status": "En curso"
+    },
+    {
+      "id": 5,
+      "nombre": "Branding & Comunicación",
+      "tareas_actuales": 14,
+      "tareas_nuevas": 0,
+      "total": 14,
+      "status": "En curso"
+    },
+    {
+      "id": 6,
+      "nombre": "Espacio E1 — Madrid",
+      "tareas_actuales": 18,
+      "tareas_nuevas": 5,
+      "total": 23,
+      "status": "En curso - Soft opening Sep 2026"
+    },
+    {
+      "id": 7,
+      "nombre": "Formación Facilitadores",
+      "tareas_actuales": 7,
+      "tareas_nuevas": 8,
+      "total": 15,
+      "status": "En curso"
+    },
+    {
+      "id": 8,
+      "nombre": "Stack Tecnológico",
+      "tareas_actuales": 7,
+      "tareas_nuevas": 3,
+      "total": 10,
+      "status": "Decisión pendiente (t111)"
+    },
+    {
+      "id": 9,
+      "nombre": "Legal & Compliance",
+      "tareas_actuales": 13,
+      "tareas_nuevas": 28,
+      "total": 41,
+      "status": "En curso - CONSTRAINT AGOSTO"
+    },
+    {
+      "id": 10,
+      "nombre": "Dirección & Governance",
+      "tareas_actuales": 7,
+      "tareas_nuevas": 0,
+      "total": 7,
+      "status": "Activo"
+    },
+    {
+      "id": 11,
+      "nombre": "Expansión — Búsqueda Multi-Ciudad",
+      "tareas_actuales": 0,
+      "tareas_nuevas": 30,
+      "total": 30,
+      "status": "NUEVO - Iniciar Jun 2026"
+    },
+    {
+      "id": 12,
+      "nombre": "Espacio E2 — Barcelona",
+      "tareas_actuales": 0,
+      "tareas_nuevas": 45,
+      "total": 45,
+      "status": "NUEVO - Apertura Sep-Oct 2026"
+    },
+    {
+      "id": 13,
+      "nombre": "Espacio E3 — Valencia",
+      "tareas_actuales": 0,
+      "tareas_nuevas": 45,
+      "total": 45,
+      "status": "NUEVO - Apertura Oct-Nov 2026"
+    },
+    {
+      "id": 14,
+      "nombre": "Espacio E4 — Bilbao",
+      "tareas_actuales": 0,
+      "tareas_nuevas": 45,
+      "total": 45,
+      "status": "NUEVO - Apertura Nov-Dic 2026"
+    },
+    {
+      "id": 15,
+      "nombre": "Espacio E5 — Por Determinar",
+      "tareas_actuales": 0,
+      "tareas_nuevas": 50,
+      "total": 50,
+      "status": "NUEVO - Decisión Sep, Apertura Dic 2026"
+    },
+    {
+      "id": 16,
+      "nombre": "Operaciones Centralizadas",
+      "tareas_actuales": 0,
+      "tareas_nuevas": 15,
+      "total": 15,
+      "status": "NUEVO - Iniciar Jul 2026"
+    },
+    {
+      "id": 17,
+      "nombre": "Finanzas & Fundraising",
+      "tareas_actuales": 0,
+      "tareas_nuevas": 10,
+      "total": 10,
+      "status": "NUEVO - Iniciar Jun 2026"
+    }
+  ],
+  "owners_asignaciones_pendientes": {
+    "urgente_esta_semana": [
+      {
+        "rol": "Responsable Producto",
+        "tareas_asignar": 10,
+        "razon": "30% de tareas Producto sin owner. Crítico para Daruma y kits.",
+        "perfil": "Sourcing + producción + logística"
+      },
+      {
+        "rol": "Diseñador Gráfico",
+        "tareas_asignar": 5,
+        "razon": "Packaging, instrucciones, merch sin owner.",
+        "perfil": "Diseño packaging + editorial"
+      },
+      {
+        "rol": "Community Manager",
+        "tareas_asignar": 3,
+        "razon": "Canal IG+TikTok activo en junio. Contratar en mayo.",
+        "perfil": "Social media + contenido"
+      }
+    ],
+    "corto_plazo_mayo": [
+      {
+        "rol": "Manager Expansión",
+        "tareas_asignar": 30,
+        "razon": "Búsqueda paralela E2-E5. Christian no puede asumir solo.",
+        "perfil": "Real estate + negociación + retail"
+      },
+      {
+        "rol": "Apoyo Legal",
+        "tareas_asignar": 28,
+        "razon": "Licencias 4 ciudades. Cristina sola es bottleneck.",
+        "perfil": "Abogado/a o gestor/a licencias"
+      }
+    ],
+    "medio_plazo_jun_sep": [
+      {
+        "rol": "4 Facilitadores (E2-E5)",
+        "tareas_asignar": 4,
+        "razon": "1 facilitador por espacio. Certificación 1 semana c/u.",
+        "perfil": "Según perfil t87"
+      },
+      {
+        "rol": "4 Managers (E2-E5)",
+        "tareas_asignar": 4,
+        "razon": "1 manager por espacio. Formación con manual v1.",
+        "perfil": "Operaciones + atención cliente"
+      },
+      {
+        "rol": "4 Anfitriones (E2-E5)",
+        "tareas_asignar": 4,
+        "razon": "1 anfitrión/a por espacio.",
+        "perfil": "Recepción + experiencia cliente"
+      },
+      {
+        "rol": "Productor Junior",
+        "tareas_asignar": 1,
+        "razon": "Backup para Miguel en contenido E2-E5.",
+        "perfil": "Producción audiovisual"
+      },
+      {
+        "rol": "PR Manager / Agencia",
+        "tareas_asignar": 2,
+        "razon": "PR para soft opening E1 y subsiguientes.",
+        "perfil": "Relaciones públicas + medios"
+      }
+    ]
+  },
+  "recomendaciones_inmediatas": [
+    {
+      "prioridad": "P0",
+      "accion": "EJECUTAR t30 (Confirmar profesor/a) ANTES 25 ABRIL",
+      "deadline": "2026-04-25",
+      "responsable": "David",
+      "consecuencia_no_accion": "Piloto en peligro. Cascada de retrasos en todo el contenido. GO/NO-GO imposible en junio."
+    },
+    {
+      "prioridad": "P0",
+      "accion": "EJECUTAR t50+t51+t52 (Daruma 3D) ESTA SEMANA",
+      "deadline": "2026-04-18",
+      "responsable": "Christian + ¿Dani?",
+      "consecuencia_no_accion": "Sin Daruma, piloto 19 mayo NO ARRANCA. Lead time 8-10 semanas."
+    },
+    {
+      "prioridad": "P0",
+      "accion": "FORZAR DECISIÓN t111 (Stack tech) EN REUNIÓN LUPI",
+      "deadline": "2026-04-18",
+      "responsable": "Christian",
+      "consecuencia_no_accion": "t112-t116 bloqueadas. Sin tech, piloto no tiene plataforma vídeos ni reservas."
+    },
+    {
+      "prioridad": "P0",
+      "accion": "DOCUMENTAR t95 (Criterios GO/NO-GO) ESTA SEMANA",
+      "deadline": "2026-04-21",
+      "responsable": "David",
+      "consecuencia_no_accion": "Decisión GO/NO-GO sin criterios medibles. Board no puede decidir objetivamente."
+    },
+    {
+      "prioridad": "P0",
+      "accion": "ASIGNAR 30 TAREAS 'Por asignar'",
+      "deadline": "2026-04-18",
+      "responsable": "David",
+      "consecuencia_no_accion": "30 tareas sin accountability = 30 tareas en riesgo de no ejecutarse."
+    },
+    {
+      "prioridad": "P1",
+      "accion": "DECISIÓN BOARD: ¿5 espacios en 2025 SÍ o NO?",
+      "deadline": "2026-04-20",
+      "responsable": "David + Board",
+      "consecuencia_no_accion": "Planificación E2-E5 en el aire. Imposible contratar sin confirmación de objetivo."
+    },
+    {
+      "prioridad": "P1",
+      "accion": "CONTRATAR Responsable Producto + Diseñador + CM",
+      "deadline": "2026-05-01",
+      "responsable": "David",
+      "consecuencia_no_accion": "Producto, packaging, social media sin owner. Bloquea múltiples tareas."
+    },
+    {
+      "prioridad": "P1",
+      "accion": "INICIAR BÚSQUEDA EMPRESA REFORMAS que trabaje AGOSTO",
+      "deadline": "2026-04-25",
+      "responsable": "Christian",
+      "consecuencia_no_accion": "Si empresa cierra agosto, obra se retrasa 2-3 semanas. Soft opening imposible 1 sep."
+    }
+  ],
+  "timeline_ajustado_recomendado": {
+    "nota": "Si se acepta mover GO/NO-GO a 27 junio para que informe piloto esté listo",
+    "hitos_criticos_ajustados": [
+      {
+        "hito": "Confirmar profesor/a (t30)",
+        "fecha_original": "2026-04-25",
+        "fecha_ajustada": "2026-04-25",
+        "cambio": "NINGUNO - URGENTE EJECUTAR"
+      },
+      {
+        "hito": "Test validación (t38)",
+        "fecha_original": "2026-05-19",
+        "fecha_ajustada": "2026-05-22",
+        "cambio": "+3 días por cascada correcciones"
+      },
+      {
+        "hito": "Piloto arranca (t98)",
+        "fecha_original": "2026-05-19",
+        "fecha_ajustada": "2026-05-25",
+        "cambio": "+6 días por cascada correcciones"
+      },
+      {
+        "hito": "Informe GO/NO-GO (t102)",
+        "fecha_original": "2026-06-18",
+        "fecha_ajustada": "2026-06-24",
+        "cambio": "+6 días por cascada correcciones"
+      },
+      {
+        "hito": "GO/NO-GO con board (t06)",
+        "fecha_original": "2026-06-20",
+        "fecha_ajustada": "2026-06-27",
+        "cambio": "+7 días para esperar informe"
+      },
+      {
+        "hito": "Inicio reforma (t83)",
+        "fecha_original": "2026-06-25",
+        "fecha_ajustada": "2026-07-02",
+        "cambio": "+7 días por GO/NO-GO ajustado"
+      },
+      {
+        "hito": "Fin obra (t84)",
+        "fecha_original": "2026-08-20",
+        "fecha_ajustada": "2026-08-27",
+        "cambio": "+7 días por inicio ajustado"
+      },
+      {
+        "hito": "Soft Opening E1 (t92)",
+        "fecha_original": "2026-09-01",
+        "fecha_ajustada": "2026-09-01",
+        "cambio": "NINGUNO - Deadline comercial inmovible. MARGEN CRÍTICO: 5 días."
+      }
+    ],
+    "margen_final": "5 días entre fin obra (27 ago) y soft opening (1 sep). SIN BUFFER. Cualquier retraso = apertura tarde."
+  }
+}
