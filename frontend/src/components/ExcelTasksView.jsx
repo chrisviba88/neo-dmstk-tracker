@@ -15,8 +15,10 @@ function saveOptions(storageKey, options) {
 // Dropdown LIMPIO: solo selecciona valores. Lee opciones de localStorage.
 function EditableDropdown({ value, options, storageKey, field, labelField, task, tasks, onUpdate, palette, style }) {
   const opts = getOptions(storageKey, options);
+  const disabled = !onUpdate;
 
   function handleChange(e) {
+    if (!onUpdate) return;
     const val = e.target.value;
     const selected = opts.find(o => o.value === val);
     const changes = { [field]: val };
@@ -25,7 +27,7 @@ function EditableDropdown({ value, options, storageKey, field, labelField, task,
   }
 
   return (
-    <select value={value || ''} onChange={handleChange} onClick={(e) => e.stopPropagation()} style={style}>
+    <select value={value || ''} onChange={handleChange} onClick={(e) => e.stopPropagation()} disabled={disabled} style={{ ...style, opacity: disabled ? 0.6 : 1, cursor: disabled ? 'default' : 'pointer' }}>
       {opts.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
     </select>
   );
@@ -132,8 +134,12 @@ export default function ExcelTasksView({
   onTaskClick,
   sortKey = 'name',
   sortDir = 1,
-  onSort
+  onSort,
+  readOnly = false
 }) {
+  // Si readOnly, bloquear todas las funciones de edicion
+  const safeUpdate = readOnly ? null : onUpdateTask;
+  const safeDelete = readOnly ? null : onDeleteTask;
   const PALETTE = {
     nectarine: "#D7897F",
     mostaza: "#E2B93B",
@@ -395,7 +401,7 @@ export default function ExcelTasksView({
       case 'status':
         return (
           <td style={cellStyle}>
-            <EditableDropdown value={task.status} field="status" storageKey="neo-dmstk-opt-status" task={task} tasks={tasks} onUpdate={(id, changes) => onUpdateTask?.(id, changes)} palette={PALETTE}
+            <EditableDropdown value={task.status} field="status" storageKey="neo-dmstk-opt-status" task={task} tasks={tasks} onUpdate={(id, changes) => safeUpdate?.(id, changes)} palette={PALETTE}
               options={[{value:'Pendiente',label:'Pendiente'},{value:'En curso',label:'En curso'},{value:'Hecho',label:'Hecho'}]}
               style={{ width:'100%', padding:'6px 8px', fontSize:12, border:'none', borderRadius:6, background:(STATUS_COLORS[task.status]||PALETTE.muted)+'18', color:STATUS_COLORS[task.status]||PALETTE.muted, fontWeight:600, cursor:'pointer', outline:'none' }}
             />
@@ -405,7 +411,7 @@ export default function ExcelTasksView({
       case 'priority':
         return (
           <td style={cellStyle}>
-            <EditableDropdown value={task.priority} field="priority" storageKey="neo-dmstk-opt-priority" task={task} tasks={tasks} onUpdate={(id, changes) => onUpdateTask?.(id, changes)} palette={PALETTE}
+            <EditableDropdown value={task.priority} field="priority" storageKey="neo-dmstk-opt-priority" task={task} tasks={tasks} onUpdate={(id, changes) => safeUpdate?.(id, changes)} palette={PALETTE}
               options={[{value:'P0',label:'Critica'},{value:'P1',label:'Alta'},{value:'P2',label:'Media'},{value:'P3',label:'Baja'}]}
               style={{ width:'100%', padding:'6px 8px', fontSize:12, border:'none', borderRadius:6, background:(PRIORITY_COLORS[task.priority]||PALETTE.muted)+'18', color:PRIORITY_COLORS[task.priority]||PALETTE.muted, fontWeight:600, cursor:'pointer', outline:'none' }}
             />
@@ -422,10 +428,10 @@ export default function ExcelTasksView({
                 if (value === '__new__') {
                   const newOwner = prompt('Nuevo owner:');
                   if (newOwner && newOwner.trim()) {
-                    onUpdateTask?.(task.id, { owner: newOwner.trim() });
+                    safeUpdate?.(task.id, { owner: newOwner.trim() });
                   }
                 } else {
-                  onUpdateTask?.(task.id, { owner: value || 'Por asignar' });
+                  safeUpdate?.(task.id, { owner: value || 'Por asignar' });
                 }
               }}
               onClick={(e) => e.stopPropagation()}
@@ -462,7 +468,7 @@ export default function ExcelTasksView({
             <input
               type="date"
               value={task[column.key] || ''}
-              onChange={(e) => onUpdateTask?.(task.id, { [column.key]: e.target.value })}
+              onChange={(e) => safeUpdate?.(task.id, { [column.key]: e.target.value })}
               onClick={(e) => e.stopPropagation()}
               style={{
                 width: '100%',
@@ -480,13 +486,14 @@ export default function ExcelTasksView({
         );
 
       case 'actions':
+        if (readOnly) return <td style={{ ...cellStyle, textAlign: 'center' }} />;
         return (
           <td style={{ ...cellStyle, textAlign: 'center' }}>
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                if (onDeleteTask) {
-                  onDeleteTask(task.id);
+                if (safeDelete) {
+                  safeDelete(task.id);
                 }
               }}
               style={{
@@ -519,7 +526,7 @@ export default function ExcelTasksView({
       case 'level':
         return (
           <td style={cellStyle}>
-            <select value={task.level || 'task'} onChange={(e) => onUpdateTask?.(task.id, { level: e.target.value })} onClick={(e) => e.stopPropagation()} style={{ fontSize: 11, padding: '3px 6px', borderRadius: 4, border: 'none', background: task.level === 'epic' ? PALETTE.mostaza + '18' : PALETTE.lagune + '12', color: task.level === 'epic' ? PALETTE.mostaza : PALETTE.lagune, fontWeight: 600, cursor: 'pointer' }}>
+            <select value={task.level || 'task'} onChange={(e) => safeUpdate?.(task.id, { level: e.target.value })} onClick={(e) => e.stopPropagation()} disabled={readOnly} style={{ fontSize: 11, padding: '3px 6px', borderRadius: 4, border: 'none', background: task.level === 'epic' ? PALETTE.mostaza + '18' : PALETTE.lagune + '12', color: task.level === 'epic' ? PALETTE.mostaza : PALETTE.lagune, fontWeight: 600, cursor: readOnly ? 'default' : 'pointer', opacity: readOnly ? 0.7 : 1 }}>
               <option value="epic">Iniciativa</option>
               <option value="task">Tarea</option>
             </select>
@@ -529,7 +536,7 @@ export default function ExcelTasksView({
       case 'familyLabel':
         return (
           <td style={cellStyle}>
-            <EditableDropdown value={task.family} field="family" labelField="familyLabel" storageKey="neo-dmstk-opt-family" task={task} tasks={tasks} onUpdate={(id, changes) => onUpdateTask?.(id, changes)} palette={PALETTE}
+            <EditableDropdown value={task.family} field="family" labelField="familyLabel" storageKey="neo-dmstk-opt-family" task={task} tasks={tasks} onUpdate={(id, changes) => safeUpdate?.(id, changes)} palette={PALETTE}
               options={[
                 {value:'DIR',label:'Direccion & Decision'},{value:'LEG',label:'Legal & Licencias'},
                 {value:'MET',label:'Metodo PERMA'},{value:'CON',label:'Contenido Video'},
@@ -551,7 +558,7 @@ export default function ExcelTasksView({
         const sc = stgColors[task.stage] || PALETTE.muted;
         return (
           <td style={cellStyle}>
-            <EditableDropdown value={task.stage} field="stage" storageKey="neo-dmstk-opt-stage" task={task} tasks={tasks} onUpdate={(id, changes) => onUpdateTask?.(id, changes)} palette={PALETTE}
+            <EditableDropdown value={task.stage} field="stage" storageKey="neo-dmstk-opt-stage" task={task} tasks={tasks} onUpdate={(id, changes) => safeUpdate?.(id, changes)} palette={PALETTE}
               options={stgOpts}
               style={{ width:'100%', fontSize:10, padding:'3px 6px', borderRadius:4, border:'none', background:sc+'18', color:sc, fontWeight:600, cursor:'pointer' }}
             />
@@ -564,7 +571,7 @@ export default function ExcelTasksView({
         const rc = riskColors[task.risk] || PALETTE.muted;
         return (
           <td style={cellStyle}>
-            <EditableDropdown value={task.risk} field="risk" storageKey="neo-dmstk-opt-risk" task={task} tasks={tasks} onUpdate={(id, changes) => onUpdateTask?.(id, changes)} palette={PALETTE}
+            <EditableDropdown value={task.risk} field="risk" storageKey="neo-dmstk-opt-risk" task={task} tasks={tasks} onUpdate={(id, changes) => safeUpdate?.(id, changes)} palette={PALETTE}
               options={[{value:'CRITICO',label:'Critico'},{value:'ALTO',label:'Alto'},{value:'MEDIO',label:'Medio'},{value:'BAJO',label:'Bajo'}]}
               style={{ fontSize:10, padding:'3px 6px', borderRadius:4, border:'none', background:rc+'18', color:rc, fontWeight:600, cursor:'pointer' }}
             />
@@ -575,7 +582,7 @@ export default function ExcelTasksView({
       case 'scope':
         return (
           <td style={cellStyle}>
-            <EditableDropdown value={task.scope} field="scope" storageKey="neo-dmstk-opt-scope" task={task} tasks={tasks} onUpdate={(id, changes) => onUpdateTask?.(id, changes)} palette={PALETTE}
+            <EditableDropdown value={task.scope} field="scope" storageKey="neo-dmstk-opt-scope" task={task} tasks={tasks} onUpdate={(id, changes) => safeUpdate?.(id, changes)} palette={PALETTE}
               options={[{value:'global',label:'Global'},{value:'space',label:'Espacio'}]}
               style={{ fontSize:11, padding:'3px 6px', borderRadius:4, border:'none', background:task.scope==='global'?'#a78bfa18':'#fb923c18', color:task.scope==='global'?'#a78bfa':'#fb923c', fontWeight:500, cursor:'pointer' }}
             />
@@ -585,7 +592,7 @@ export default function ExcelTasksView({
       case 'milestone':
         return (
           <td style={cellStyle}>
-            <EditableDropdown value={task.milestone || ''} field="milestone" storageKey="neo-dmstk-opt-milestone" task={task} tasks={tasks} onUpdate={(id, changes) => onUpdateTask?.(id, changes)} palette={PALETTE}
+            <EditableDropdown value={task.milestone || ''} field="milestone" storageKey="neo-dmstk-opt-milestone" task={task} tasks={tasks} onUpdate={(id, changes) => safeUpdate?.(id, changes)} palette={PALETTE}
               options={[{value:'',label:'Sin hito'},{value:'piloto',label:'Piloto arranca'},{value:'goNoGo',label:'GO/NO-GO Board'},{value:'reformaE1',label:'Reforma E1'},{value:'softOpeningE1',label:'Soft Opening E1'},{value:'grandOpeningE1',label:'Grand Opening E1'},{value:'softOpeningE2',label:'Apertura E2 BCN'}]}
               style={{ width:'100%', fontSize:10, padding:'3px 6px', borderRadius:4, border:`1px solid ${PALETTE.faint}`, background:PALETTE.bone, color:PALETTE.soft, cursor:'pointer' }}
             />
@@ -595,7 +602,7 @@ export default function ExcelTasksView({
       case 'notes':
         return (
           <td style={cellStyle} onClick={(e) => e.stopPropagation()}>
-            <input type="text" value={task.notes || ''} onChange={(e) => onUpdateTask?.(task.id, { notes: e.target.value })} placeholder="..." style={{ width: '100%', fontSize: 11, padding: '4px 6px', borderRadius: 4, border: `1px solid ${PALETTE.faint}`, background: PALETTE.bone, color: PALETTE.muted, outline: 'none' }} />
+            <input type="text" value={task.notes || ''} onChange={(e) => safeUpdate?.(task.id, { notes: e.target.value })} placeholder="..." readOnly={readOnly} style={{ width: '100%', fontSize: 11, padding: '4px 6px', borderRadius: 4, border: `1px solid ${PALETTE.faint}`, background: PALETTE.bone, color: PALETTE.muted, outline: 'none', opacity: readOnly ? 0.7 : 1 }} />
           </td>
         );
 
@@ -624,7 +631,7 @@ export default function ExcelTasksView({
           field={COLUMN_OPTIONS_CONFIG[managingColumn].field}
           labelField={COLUMN_OPTIONS_CONFIG[managingColumn].labelField}
           tasks={tasks}
-          onUpdate={(id, changes) => onUpdateTask?.(id, changes)}
+          onUpdate={(id, changes) => safeUpdate?.(id, changes)}
           palette={PALETTE}
           onClose={() => setManagingColumn(null)}
         />

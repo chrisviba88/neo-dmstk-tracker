@@ -19,7 +19,7 @@ class TimelineErrorBoundary extends Component {
   }
 }
 
-function SummaryTimelineInner({ tasks, PALETTE, SERIF, onUpdateTask, onDeleteTask }) {
+function SummaryTimelineInner({ tasks, PALETTE, SERIF, onUpdateTask, onDeleteTask, readOnly = false }) {
   // Workstreams - MISMA lista que en ExcelTasksView
   const WORKSTREAMS = [
     "Dirección", "Legal", "Método", "Profesor-Contenido", "Producto",
@@ -442,6 +442,7 @@ function SummaryTimelineInner({ tasks, PALETTE, SERIF, onUpdateTask, onDeleteTas
 
   // Funciones para editar tareas
   const handleEditTask = (task) => {
+    if (readOnly) return;
     setEditingTask(task);
     setEditForm({
       name: task.name || '',
@@ -454,7 +455,7 @@ function SummaryTimelineInner({ tasks, PALETTE, SERIF, onUpdateTask, onDeleteTas
   };
 
   const handleSaveTask = async () => {
-    if (!editingTask) return;
+    if (!editingTask || readOnly || !onUpdateTask) return;
     try {
       await onUpdateTask(editingTask.id, editForm);
       setEditingTask(null);
@@ -466,7 +467,8 @@ function SummaryTimelineInner({ tasks, PALETTE, SERIF, onUpdateTask, onDeleteTas
   };
 
   const handleDeleteTask = async (taskId) => {
-    if (!confirm('¿Estás seguro de eliminar esta tarea?')) return;
+    if (readOnly || !onDeleteTask) return;
+    if (!confirm('Estas seguro de eliminar esta tarea?')) return;
     try {
       await onDeleteTask(taskId);
       setEditingTask(null);
