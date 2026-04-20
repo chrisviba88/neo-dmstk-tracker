@@ -1093,6 +1093,17 @@ function TaskModal({ task, owners, addOwner, tasks, onSave, onClose, onDelete, r
                 <FieldLabel label="Responsable"><span style={{ fontSize: 13, color: PALETTE.ink }}>{form.owner || 'Sin asignar'}</span></FieldLabel>
               </div>
 
+              {form.parent && (function() {
+                var parentTask = tasks.find(function(t) { return t.id === form.parent; });
+                return parentTask ? (
+                  <FieldLabel label="Iniciativa padre">
+                    <div style={{ fontSize: 13, color: PALETTE.lagune, display: "flex", alignItems: "center", gap: 4 }}>
+                      <Link2 size={12} /> {parentTask.name} ({parentTask.familyLabel || parentTask.family})
+                    </div>
+                  </FieldLabel>
+                ) : null;
+              })()}
+
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
                 <FieldLabel label="Inicio"><span style={{ fontSize: 13, color: PALETTE.ink }}>{form.startDate || '-'}</span></FieldLabel>
                 <FieldLabel label="Fin"><span style={{ fontSize: 13, color: PALETTE.ink }}>{form.endDate || '-'}</span></FieldLabel>
@@ -1134,6 +1145,38 @@ function TaskModal({ task, owners, addOwner, tasks, onSave, onClose, onDelete, r
                   </select>
                 </FieldLabel>
               </div>
+
+              {/* Iniciativa padre */}
+              {form.level !== 'epic' && (
+                <FieldLabel label="Iniciativa padre">
+                  <select value={form.parent || ""} onChange={function(e) { set("parent", e.target.value || null); }}
+                    style={{ ...inputStyle, fontSize: 13, color: form.parent ? PALETTE.ink : PALETTE.muted }}>
+                    <option value="">Sin iniciativa (tarea independiente)</option>
+                    {/* Primero las de la misma area */}
+                    {form.family && tasks.filter(function(t) { return t.level === 'epic' && t.family === form.family && t.id !== form.id; }).length > 0 && (
+                      <optgroup label={"Misma area (" + (form.familyLabel || form.family) + ")"}>
+                        {tasks.filter(function(t) { return t.level === 'epic' && t.family === form.family && t.id !== form.id; }).map(function(t) {
+                          return <option key={t.id} value={t.id}>{t.name}</option>;
+                        })}
+                      </optgroup>
+                    )}
+                    {/* Luego las demas areas */}
+                    <optgroup label="Otras areas">
+                      {tasks.filter(function(t) { return t.level === 'epic' && t.family !== form.family && t.id !== form.id; }).map(function(t) {
+                        return <option key={t.id} value={t.id}>{t.familyLabel || t.family} — {t.name}</option>;
+                      })}
+                    </optgroup>
+                  </select>
+                  {form.parent && (function() {
+                    var parentTask = tasks.find(function(t) { return t.id === form.parent; });
+                    return parentTask ? (
+                      <div style={{ marginTop: 6, fontSize: 11, color: PALETTE.lagune, display: "flex", alignItems: "center", gap: 4 }}>
+                        <Link2 size={12} /> Ligada a: <strong>{parentTask.name}</strong> ({parentTask.familyLabel || parentTask.family})
+                      </div>
+                    ) : null;
+                  })()}
+                </FieldLabel>
+              )}
 
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 14 }}>
                 <FieldLabel label="Estado">
@@ -1398,6 +1441,7 @@ export default function App() {
 
   // Cargar notas recientes (ultimas 24h) para badge de notificacion
   var [notesError, setNotesError] = useState('');
+  var [showNotesList, setShowNotesList] = useState(false);
   useEffect(function() {
     if (!isAuthenticated()) { setNotesError('no-auth'); return; }
     var since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
@@ -2032,18 +2076,39 @@ export default function App() {
 
         <div style={{ display: "flex", gap: 6 }}>
           {/* Notificaciones de notas */}
-          <div style={{ position: "relative" }}>
-            <button onClick={function() {
-              if (recentNotes.length > 0) {
-                var firstNote = recentNotes[0];
-                if (firstNote) { var t = tasks.find(function(tk) { return tk.id === firstNote.task_id; }); if (t) setModal(t); }
-              }
-            }} style={{ display: "flex", alignItems: "center", padding: 7, borderRadius: 6, border: "0.5px solid " + (recentNotes.length > 0 ? PALETTE.lagune + "40" : PALETTE.faint), background: recentNotes.length > 0 ? PALETTE.lagune + "08" : "transparent", cursor: "pointer", color: recentNotes.length > 0 ? PALETTE.lagune : PALETTE.muted }} title={notesError ? "Error: " + notesError : recentNotes.length + " notas recientes"}>
-              <MessageCircle size={14} />
-            </button>
-            {recentNotes.length > 0 && <span style={{ position: "absolute", top: -4, right: -4, background: PALETTE.nectarine, color: "#fff", fontSize: 9, fontWeight: 700, minWidth: 16, height: 16, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 3px" }}>{recentNotes.length}</span>}
-            {notesError && <span style={{ position: "absolute", top: -4, right: -4, background: PALETTE.danger, color: "#fff", fontSize: 8, width: 12, height: 12, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}>!</span>}
-          </div>
+              <div style={{ position: "relative" }}>
+                <button onClick={function() { setShowNotesList(!showNotesList); }}
+                  style={{ display: "flex", alignItems: "center", padding: 7, borderRadius: 6, border: "0.5px solid " + (recentNotes.length > 0 ? PALETTE.lagune + "40" : PALETTE.faint), background: recentNotes.length > 0 ? PALETTE.lagune + "08" : "transparent", cursor: "pointer", color: recentNotes.length > 0 ? PALETTE.lagune : PALETTE.muted }}
+                  title={recentNotes.length + " notas recientes"}>
+                  <MessageCircle size={14} />
+                </button>
+                {recentNotes.length > 0 && <span style={{ position: "absolute", top: -4, right: -4, background: PALETTE.nectarine, color: "#fff", fontSize: 9, fontWeight: 700, minWidth: 16, height: 16, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 3px", pointerEvents: "none" }}>{recentNotes.length}</span>}
+
+                {showNotesList && (
+                  <div style={{ position: "absolute", top: "100%", right: 0, marginTop: 4, background: PALETTE.bone, borderRadius: 10, border: "1px solid " + PALETTE.faint, boxShadow: "0 8px 32px rgba(0,0,0,0.12)", zIndex: 200, width: 320, maxHeight: 360, overflowY: "auto" }}>
+                    <div style={{ padding: "10px 14px", borderBottom: "1px solid " + PALETTE.faint, fontSize: 11, fontWeight: 600, color: PALETTE.lagune, textTransform: "uppercase", letterSpacing: ".5px" }}>
+                      Notas recientes
+                    </div>
+                    {recentNotes.length === 0 && <div style={{ padding: 16, fontSize: 12, color: PALETTE.muted, textAlign: "center" }}>Sin notas recientes</div>}
+                    {recentNotes.map(function(note) {
+                      var t = tasks.find(function(tk) { return tk.id === note.task_id; });
+                      return (
+                        <div key={note.id} onClick={function() { if (t) { setModal(t); setShowNotesList(false); } }}
+                          style={{ padding: "10px 14px", borderBottom: "1px solid " + PALETTE.faint + "40", cursor: t ? "pointer" : "default" }}
+                          onMouseEnter={function(e) { if (t) e.currentTarget.style.background = PALETTE.warm; }}
+                          onMouseLeave={function(e) { e.currentTarget.style.background = "transparent"; }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 3 }}>
+                            <span style={{ fontSize: 11, fontWeight: 600, color: PALETTE.ink }}>{note.user_name}</span>
+                            <span style={{ fontSize: 9, color: PALETTE.muted }}>{new Date(note.created_at).toLocaleString("es-ES", { hour: "2-digit", minute: "2-digit", day: "numeric", month: "short" })}</span>
+                          </div>
+                          <div style={{ fontSize: 11, color: PALETTE.soft, marginBottom: 3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{note.content}</div>
+                          {t && <div style={{ fontSize: 10, color: PALETTE.lagune }}>en: {t.name}</div>}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
           {canEdit && <button onClick={function() { setShowHistory(true); }} style={{ display: "flex", alignItems: "center", padding: 7, borderRadius: 6, border: "0.5px solid " + PALETTE.faint, background: "transparent", cursor: "pointer", color: PALETTE.muted }} title="Historial de versiones"><History size={14} /></button>}
           {isAdmin && <button onClick={function() { setShowSettings(true); }} style={{ display: "flex", alignItems: "center", padding: 7, borderRadius: 6, border: "0.5px solid " + PALETTE.faint, background: "transparent", cursor: "pointer", color: PALETTE.muted }} title="Equipo"><Users size={14} /></button>}
           {canEdit && <button onClick={undo} style={{ display: "flex", alignItems: "center", padding: 7, borderRadius: 6, border: "0.5px solid " + PALETTE.faint, background: "transparent", cursor: "pointer", color: undoStack.current.length > 0 ? PALETTE.lagune : PALETTE.faint, opacity: undoStack.current.length > 0 ? 1 : 0.4 }} title="Deshacer (Ctrl+Z)"><RotateCcw size={13} /></button>}
