@@ -1179,7 +1179,6 @@ function TaskModal({ task, owners, addOwner, tasks, onSave, onClose, onDelete, r
               </FieldLabel>
             </>
           )}
-          </FieldLabel>
 
           {/* Notas del equipo — todos pueden escribir, incluso viewers */}
           {!isNew && <TaskNotes taskId={form.id} taskName={form.name} />}
