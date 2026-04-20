@@ -2087,7 +2087,7 @@ export default function App() {
                 {showNotesList && (
                   <>
                   <div onClick={function() { setShowNotesList(false); }} style={{ position: "fixed", inset: 0, zIndex: 199 }} />
-                  <div style={{ position: "fixed", top: 60, right: 16, background: PALETTE.bone, borderRadius: 12, border: "1px solid " + PALETTE.faint, boxShadow: "0 12px 40px rgba(0,0,0,0.15)", zIndex: 200, width: Math.min(360, window.innerWidth - 32), maxHeight: "70vh", overflowY: "auto" }}>
+                  <div style={{ position: "absolute", top: "100%", left: 0, marginTop: 4, background: PALETTE.bone, borderRadius: 12, border: "1px solid " + PALETTE.faint, boxShadow: "0 12px 40px rgba(0,0,0,0.15)", zIndex: 200, width: Math.min(360, window.innerWidth - 32), maxHeight: "70vh", overflowY: "auto" }}>
                     <div style={{ padding: "10px 14px", borderBottom: "1px solid " + PALETTE.faint, fontSize: 11, fontWeight: 600, color: PALETTE.lagune, textTransform: "uppercase", letterSpacing: ".5px" }}>
                       Notas recientes
                     </div>
