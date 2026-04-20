@@ -2077,7 +2077,7 @@ export default function App() {
         <div style={{ display: "flex", gap: 6 }}>
           {/* Notificaciones de notas */}
               <div style={{ position: "relative" }}>
-                <button onClick={function() { setShowNotesList(!showNotesList); }}
+                <button onClick={function() { if (!showNotesList) { setShowNotesList(true); } else { setShowNotesList(false); setRecentNotes([]); } }}
                   style={{ display: "flex", alignItems: "center", padding: 7, borderRadius: 6, border: "0.5px solid " + (recentNotes.length > 0 ? PALETTE.lagune + "40" : PALETTE.faint), background: recentNotes.length > 0 ? PALETTE.lagune + "08" : "transparent", cursor: "pointer", color: recentNotes.length > 0 ? PALETTE.lagune : PALETTE.muted }}
                   title={recentNotes.length + " notas recientes"}>
                   <MessageCircle size={14} />
@@ -2086,7 +2086,7 @@ export default function App() {
 
                 {showNotesList && (
                   <>
-                  <div onClick={function() { setShowNotesList(false); }} style={{ position: "fixed", inset: 0, zIndex: 199 }} />
+                  <div onClick={function() { setShowNotesList(false); setRecentNotes([]); }} style={{ position: "fixed", inset: 0, zIndex: 199 }} />
                   <div style={{ position: "absolute", top: "100%", left: 0, marginTop: 4, background: PALETTE.bone, borderRadius: 12, border: "1px solid " + PALETTE.faint, boxShadow: "0 12px 40px rgba(0,0,0,0.15)", zIndex: 200, width: Math.min(360, window.innerWidth - 32), maxHeight: "70vh", overflowY: "auto" }}>
                     <div style={{ padding: "10px 14px", borderBottom: "1px solid " + PALETTE.faint, fontSize: 11, fontWeight: 600, color: PALETTE.lagune, textTransform: "uppercase", letterSpacing: ".5px" }}>
                       Notas recientes
