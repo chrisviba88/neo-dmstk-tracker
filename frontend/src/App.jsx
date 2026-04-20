@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import io from 'socket.io-client';
 import { supabase, BACKEND_URL } from './lib/supabase';
+import { dbSelect, dbInsert, dbUpdate, dbDelete, isAuthenticated } from './lib/db';
 import { useAuth } from './contexts/AuthContext';
 import GlobalSearch from './components/GlobalSearch';
 import ViewManager from './components/ViewManager';
@@ -1405,13 +1406,19 @@ export default function App() {
     return false;
   }
 
-  // Persistir tareas
+  // Persistir tareas — cache local para velocidad
   function persistTasks(taskArray) {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(taskArray));
     } catch (e) {
       console.error('Error guardando en localStorage:', e);
     }
+  }
+
+  // Preparar tarea para Supabase (limpiar campos computed)
+  function taskForDB(task) {
+    const { ws, project, ...base } = task;
+    return { ...base, spaces: JSON.stringify(base.spaces || []), deps: JSON.stringify(base.deps || []) };
   }
 
   // Undo/Redo stack
@@ -1490,35 +1497,82 @@ export default function App() {
     reader.readAsText(file);
   }
 
+  // Sincronizar datos locales a Supabase (upsert masivo)
+  async function syncToSupabase(taskArray) {
+    if (!isAuthenticated() || !taskArray?.length) return;
+    try {
+      const BATCH_SIZE = 50;
+      const dbTasks = taskArray.map(taskForDB);
+      for (let i = 0; i < dbTasks.length; i += BATCH_SIZE) {
+        const batch = dbTasks.slice(i, i + BATCH_SIZE);
+        const url = import.meta.env.VITE_SUPABASE_URL;
+        const key = import.meta.env.VITE_SUPABASE_ANON_KEY;
+        const projRef = url.match(/https:\/\/([^.]+)/)?.[1];
+        const raw = localStorage.getItem(`sb-${projRef}-auth-token`);
+        const token = raw ? JSON.parse(raw).access_token : key;
+
+        await fetch(`${url}/rest/v1/tasks`, {
+          method: 'POST',
+          headers: {
+            'apikey': key,
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            'Prefer': 'resolution=merge-duplicates',
+          },
+          body: JSON.stringify(batch),
+        });
+      }
+      console.log('Sync a Supabase completado:', taskArray.length, 'tareas');
+    } catch (err) {
+      console.warn('Error sync a Supabase:', err.message);
+    }
+  }
+
   async function loadData() {
     try {
-      // 1. SIEMPRE leer de localStorage primero — tiene los cambios del usuario
+      // 1. Intentar Supabase (fuente de verdad)
+      let supabaseTasks = null;
+      let supabaseHasV2 = false;
+
+      if (isAuthenticated()) {
+        try {
+          supabaseTasks = await dbSelect('tasks', 'select=*&or=(deleted.is.null,deleted.eq.false)&order=family.asc,level.asc');
+          supabaseHasV2 = supabaseTasks?.some(t => t.family);
+        } catch (err) {
+          console.warn('Error leyendo Supabase:', err.message);
+        }
+      }
+
+      // 2. Si Supabase tiene datos v2, usarlos como fuente
+      if (supabaseHasV2 && supabaseTasks.length > 0) {
+        const enriched = supabaseTasks.map(enrichTask);
+        setTasks(enriched);
+        persistTasks(enriched);
+        console.log('Tareas desde Supabase (v2):', enriched.length);
+        setLoading(false);
+        return;
+      }
+
+      // 3. localStorage tiene datos mas ricos — usarlos y sincronizar a Supabase
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
         const parsed = JSON.parse(stored);
-        if (parsed && parsed.length > 0 && parsed[0].family) {
-          setTasks(parsed.map(enrichTask));
-          console.log('Tareas cargadas desde localStorage:', parsed.length);
-          setLoading(false);
-          return;
-        }
-      }
-
-      // 2. Si no hay localStorage, intentar Supabase
-      if (supabase) {
-        const { data: tasksData, error: tasksError } = await supabase.from('tasks').select('*');
-        if (!tasksError && tasksData && tasksData.length > 0 && tasksData[0].family) {
-          const enriched = tasksData.map(enrichTask);
+        if (parsed?.length > 0 && parsed[0].family) {
+          const enriched = parsed.map(enrichTask);
           setTasks(enriched);
-          persistTasks(enriched);
-          saveSnapshot(enriched, 'carga desde Supabase');
-          console.log('Tareas cargadas desde Supabase:', enriched.length);
+          console.log('Tareas desde cache local:', enriched.length);
+
+          // Auto-sync: subir datos locales a Supabase (background)
+          if (isAuthenticated() && !supabaseHasV2) {
+            console.log('Sincronizando datos locales a Supabase...');
+            syncToSupabase(enriched);
+          }
           setLoading(false);
           return;
         }
       }
 
-      // 3. Ultimo recurso: archivo estatico
+      // 4. Ultimo recurso: archivo estatico
       const initial = TASKS_V2.map(enrichTask);
       setTasks(initial);
       persistTasks(initial);
@@ -1542,19 +1596,6 @@ export default function App() {
     if (newOwners) setOwners(no);
   }, [tasks, owners]);
 
-  // Strip v2-only fields for Supabase (until schema is updated)
-  // Keep original fields: id, name, ws, status, priority, startDate, endDate, owner, isMilestone, risk, notes, deps
-  function taskForSupabase(task) {
-    const { project, family, familyLabel, level, parent, pillar, stage, scope, spaces, milestone, deleted, ...base } = task;
-    return base;
-  }
-
-  // Campos que van a Supabase (excluir ws y project que son computed)
-  function taskForDB(task) {
-    const { ws, project, ...base } = task;
-    return { ...base, spaces: JSON.stringify(base.spaces || []) };
-  }
-
   async function updateTask(id, changes) {
     undoStack.current.push([...tasks]);
     if (undoStack.current.length > MAX_UNDO) undoStack.current.shift();
@@ -1565,12 +1606,12 @@ export default function App() {
     persistWithHistory(updated, 'edicion tarea');
     setLastSaved(new Date());
 
-    // Guardar en Supabase
+    // Guardar en Supabase (fuente de verdad)
     const task = updated.find(t => t.id === id);
-    if (supabase && task) {
-      supabase.from('tasks').update(taskForDB(task)).eq('id', id).then(function(res) {
-        if (res.error) console.warn('Supabase update error:', res.error.message);
-      });
+    if (task && isAuthenticated()) {
+      dbUpdate('tasks', id, taskForDB(task)).catch(err =>
+        console.warn('Supabase update error:', err.message)
+      );
     }
 
     if (socket && socket.connected) socket.emit('task:update', task);
@@ -1593,11 +1634,11 @@ export default function App() {
       persistWithHistory(updated, 'tarea eliminada');
       setLastSaved(new Date());
 
-      // Eliminar de Supabase
-      if (supabase) {
-        supabase.from('tasks').delete().eq('id', id).then(function(res) {
-          if (res.error) console.warn('Supabase delete error:', res.error.message);
-        });
+      // Eliminar de Supabase (borrado logico)
+      if (isAuthenticated()) {
+        dbUpdate('tasks', id, { deleted: true }).catch(err =>
+          console.warn('Supabase delete error:', err.message)
+        );
       }
 
       if (socket && socket.connected) {
@@ -1634,11 +1675,11 @@ export default function App() {
     persistWithHistory(updated, 'tarea creada');
     setLastSaved(new Date());
 
-    // Crear en Supabase
-    if (supabase) {
-      supabase.from('tasks').insert([taskForDB(newTask)]).then(function(res) {
-        if (res.error) console.warn('Supabase insert error:', res.error.message);
-      });
+    // Crear en Supabase (fuente de verdad)
+    if (isAuthenticated()) {
+      dbInsert('tasks', taskForDB(newTask)).catch(err =>
+        console.warn('Supabase insert error:', err.message)
+      );
     }
 
     if (socket && socket.connected) {
