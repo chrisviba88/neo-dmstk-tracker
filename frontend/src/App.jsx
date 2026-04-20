@@ -1385,9 +1385,12 @@ export default function App() {
   useEffect(function() {
     if (!isAuthenticated()) return;
     var since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-    dbSelect('task_notes', 'select=id,task_id,user_name,content,created_at&created_at=gte.' + since + '&order=created_at.desc&limit=20')
-      .then(function(notes) { setRecentNotes(notes || []); })
-      .catch(function() {});
+    dbSelect('task_notes', 'select=id,task_id,user_name,content,created_at&created_at=gte.' + encodeURIComponent(since) + '&order=created_at.desc&limit=20')
+      .then(function(notes) {
+        console.log('[Notes] Recientes:', notes?.length || 0);
+        setRecentNotes(notes || []);
+      })
+      .catch(function(err) { console.warn('[Notes] Error cargando recientes:', err.message); });
   }, [tasks]);
   var [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   var [isSaving, setIsSaving] = useState(false);
