@@ -1701,197 +1701,68 @@ function SummaryTimelineInner({ tasks, PALETTE, SERIF, onUpdateTask, onDeleteTas
                 color: PALETTE.ink,
                 margin: 0
               }}>
-                Editar Tarea
+                {readOnly ? 'Detalle de tarea' : 'Editar Tarea'}
               </h3>
-              <button
-                onClick={() => setEditingTask(null)}
-                style={{
-                  background: 'transparent',
-                  border: 'none',
-                  fontSize: 24,
-                  cursor: 'pointer',
-                  color: PALETTE.muted
-                }}
-              >
-                ×
-              </button>
+              <button onClick={() => setEditingTask(null)} style={{ background: 'transparent', border: 'none', fontSize: 24, cursor: 'pointer', color: PALETTE.muted }}>×</button>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-              {/* Nombre */}
-              <div>
-                <label style={{ fontSize: 12, color: PALETTE.soft, fontWeight: 600, display: 'block', marginBottom: 6 }}>
-                  Nombre de la tarea
-                </label>
-                <input
-                  type="text"
-                  value={editForm.name}
-                  onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                  style={{
-                    width: '100%',
-                    padding: '10px 12px',
-                    fontSize: 14,
-                    border: `1px solid ${PALETTE.faint}`,
-                    borderRadius: 6,
-                    fontFamily: 'inherit',
-                    boxSizing: 'border-box'
-                  }}
-                />
-              </div>
-
-              {/* Fechas */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                <div>
-                  <label style={{ fontSize: 12, color: PALETTE.soft, fontWeight: 600, display: 'block', marginBottom: 6 }}>
-                    Fecha de inicio
-                  </label>
-                  <input
-                    type="date"
-                    value={editForm.startDate ? new Date(editForm.startDate).toISOString().split('T')[0] : ''}
-                    onChange={(e) => setEditForm({ ...editForm, startDate: e.target.value })}
-                    style={{
-                      width: '100%',
-                      padding: '10px 12px',
-                      fontSize: 14,
-                      border: `1px solid ${PALETTE.faint}`,
-                      borderRadius: 6,
-                      fontFamily: 'inherit',
-                      boxSizing: 'border-box'
-                    }}
-                  />
-                </div>
-                <div>
-                  <label style={{ fontSize: 12, color: PALETTE.soft, fontWeight: 600, display: 'block', marginBottom: 6 }}>
-                    Fecha de fin
-                  </label>
-                  <input
-                    type="date"
-                    value={editForm.endDate ? new Date(editForm.endDate).toISOString().split('T')[0] : ''}
-                    onChange={(e) => setEditForm({ ...editForm, endDate: e.target.value })}
-                    style={{
-                      width: '100%',
-                      padding: '10px 12px',
-                      fontSize: 14,
-                      border: `1px solid ${PALETTE.faint}`,
-                      borderRadius: 6,
-                      fontFamily: 'inherit',
-                      boxSizing: 'border-box'
-                    }}
-                  />
-                </div>
-              </div>
-
-              {/* Estado y Prioridad */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                <div>
-                  <label style={{ fontSize: 12, color: PALETTE.soft, fontWeight: 600, display: 'block', marginBottom: 6 }}>
-                    Estado
-                  </label>
-                  <select
-                    value={editForm.status}
-                    onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
-                    style={{
-                      width: '100%',
-                      padding: '10px 12px',
-                      fontSize: 14,
-                      border: `1px solid ${PALETTE.faint}`,
-                      borderRadius: 6,
-                      fontFamily: 'inherit',
-                      boxSizing: 'border-box'
-                    }}
-                  >
-                    <option value="Pendiente">Pendiente</option>
-                    <option value="En Proceso">En Proceso</option>
-                    <option value="Hecho">Hecho</option>
-                    <option value="Bloqueado">Bloqueado</option>
-                  </select>
-                </div>
-                <div>
-                  <label style={{ fontSize: 12, color: PALETTE.soft, fontWeight: 600, display: 'block', marginBottom: 6 }}>
-                    Prioridad
-                  </label>
-                  <select
-                    value={editForm.priority}
-                    onChange={(e) => setEditForm({ ...editForm, priority: e.target.value })}
-                    style={{
-                      width: '100%',
-                      padding: '10px 12px',
-                      fontSize: 14,
-                      border: `1px solid ${PALETTE.faint}`,
-                      borderRadius: 6,
-                      fontFamily: 'inherit',
-                      boxSizing: 'border-box'
-                    }}
-                  >
-                    <option value="Baja">Baja</option>
-                    <option value="Media">Media</option>
-                    <option value="Alta">Alta</option>
-                    <option value="Crítica">Crítica</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* Responsable */}
-              <div>
-                <label style={{ fontSize: 12, color: PALETTE.soft, fontWeight: 600, display: 'block', marginBottom: 6 }}>
-                  Responsable
-                </label>
-                <input
-                  type="text"
-                  value={editForm.owner}
-                  onChange={(e) => setEditForm({ ...editForm, owner: e.target.value })}
-                  style={{
-                    width: '100%',
-                    padding: '10px 12px',
-                    fontSize: 14,
-                    border: `1px solid ${PALETTE.faint}`,
-                    borderRadius: 6,
-                    fontFamily: 'inherit',
-                    boxSizing: 'border-box'
-                  }}
-                />
-              </div>
-
-              {/* Botones */}
-              <div style={{ display: 'flex', gap: 12, marginTop: 8 }}>
-                <button
-                  onClick={handleSaveTask}
-                  style={{
-                    flex: 1,
-                    padding: '12px',
-                    background: PALETTE.menthe,
-                    color: PALETTE.ink,
-                    border: 'none',
-                    borderRadius: 8,
-                    fontSize: 14,
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    transition: 'opacity 0.2s'
-                  }}
-                  onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
-                  onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
-                >
-                  Guardar cambios
-                </button>
-                <button
-                  onClick={() => handleDeleteTask(editingTask.id)}
-                  style={{
-                    padding: '12px 20px',
-                    background: PALETTE.danger,
-                    color: PALETTE.bone,
-                    border: 'none',
-                    borderRadius: 8,
-                    fontSize: 14,
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    transition: 'opacity 0.2s'
-                  }}
-                  onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
-                  onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
-                >
-                  Eliminar
-                </button>
-              </div>
+              {readOnly ? (
+                /* Viewer: solo texto plano */
+                <>
+                  <div style={{ fontSize: 16, fontFamily: SERIF, color: PALETTE.ink }}>{editForm.name}</div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                    <div><div style={{ fontSize: 11, color: PALETTE.soft, fontWeight: 600, marginBottom: 4 }}>Estado</div><span style={{ fontSize: 13, color: PALETTE.ink }}>{editForm.status}</span></div>
+                    <div><div style={{ fontSize: 11, color: PALETTE.soft, fontWeight: 600, marginBottom: 4 }}>Prioridad</div><span style={{ fontSize: 13, color: PALETTE.ink }}>{editForm.priority}</span></div>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                    <div><div style={{ fontSize: 11, color: PALETTE.soft, fontWeight: 600, marginBottom: 4 }}>Inicio</div><span style={{ fontSize: 13, color: PALETTE.ink }}>{editForm.startDate || '-'}</span></div>
+                    <div><div style={{ fontSize: 11, color: PALETTE.soft, fontWeight: 600, marginBottom: 4 }}>Fin</div><span style={{ fontSize: 13, color: PALETTE.ink }}>{editForm.endDate || '-'}</span></div>
+                  </div>
+                  <div><div style={{ fontSize: 11, color: PALETTE.soft, fontWeight: 600, marginBottom: 4 }}>Responsable</div><span style={{ fontSize: 13, color: PALETTE.ink }}>{editForm.owner || 'Sin asignar'}</span></div>
+                  <button onClick={() => setEditingTask(null)} style={{ padding: '10px', background: PALETTE.warm, color: PALETTE.soft, border: '1px solid ' + PALETTE.faint, borderRadius: 8, fontSize: 13, cursor: 'pointer' }}>Cerrar</button>
+                </>
+              ) : (
+                /* Editor: formulario completo */
+                <>
+                  <div>
+                    <label style={{ fontSize: 12, color: PALETTE.soft, fontWeight: 600, display: 'block', marginBottom: 6 }}>Nombre</label>
+                    <input type="text" value={editForm.name} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })} style={{ width: '100%', padding: '10px 12px', fontSize: 14, border: `1px solid ${PALETTE.faint}`, borderRadius: 6, fontFamily: 'inherit', boxSizing: 'border-box' }} />
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                    <div>
+                      <label style={{ fontSize: 12, color: PALETTE.soft, fontWeight: 600, display: 'block', marginBottom: 6 }}>Inicio</label>
+                      <input type="date" value={editForm.startDate ? new Date(editForm.startDate).toISOString().split('T')[0] : ''} onChange={(e) => setEditForm({ ...editForm, startDate: e.target.value })} style={{ width: '100%', padding: '10px 12px', fontSize: 14, border: `1px solid ${PALETTE.faint}`, borderRadius: 6, boxSizing: 'border-box' }} />
+                    </div>
+                    <div>
+                      <label style={{ fontSize: 12, color: PALETTE.soft, fontWeight: 600, display: 'block', marginBottom: 6 }}>Fin</label>
+                      <input type="date" value={editForm.endDate ? new Date(editForm.endDate).toISOString().split('T')[0] : ''} onChange={(e) => setEditForm({ ...editForm, endDate: e.target.value })} style={{ width: '100%', padding: '10px 12px', fontSize: 14, border: `1px solid ${PALETTE.faint}`, borderRadius: 6, boxSizing: 'border-box' }} />
+                    </div>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                    <div>
+                      <label style={{ fontSize: 12, color: PALETTE.soft, fontWeight: 600, display: 'block', marginBottom: 6 }}>Estado</label>
+                      <select value={editForm.status} onChange={(e) => setEditForm({ ...editForm, status: e.target.value })} style={{ width: '100%', padding: '10px 12px', fontSize: 14, border: `1px solid ${PALETTE.faint}`, borderRadius: 6, boxSizing: 'border-box' }}>
+                        <option value="Pendiente">Pendiente</option><option value="En curso">En curso</option><option value="Hecho">Hecho</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label style={{ fontSize: 12, color: PALETTE.soft, fontWeight: 600, display: 'block', marginBottom: 6 }}>Prioridad</label>
+                      <select value={editForm.priority} onChange={(e) => setEditForm({ ...editForm, priority: e.target.value })} style={{ width: '100%', padding: '10px 12px', fontSize: 14, border: `1px solid ${PALETTE.faint}`, borderRadius: 6, boxSizing: 'border-box' }}>
+                        <option value="P3">Baja</option><option value="P2">Media</option><option value="P1">Alta</option><option value="P0">Critica</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div>
+                    <label style={{ fontSize: 12, color: PALETTE.soft, fontWeight: 600, display: 'block', marginBottom: 6 }}>Responsable</label>
+                    <input type="text" value={editForm.owner} onChange={(e) => setEditForm({ ...editForm, owner: e.target.value })} style={{ width: '100%', padding: '10px 12px', fontSize: 14, border: `1px solid ${PALETTE.faint}`, borderRadius: 6, boxSizing: 'border-box' }} />
+                  </div>
+                  <div style={{ display: 'flex', gap: 12, marginTop: 8 }}>
+                    <button onClick={handleSaveTask} style={{ flex: 1, padding: '12px', background: PALETTE.menthe, color: PALETTE.ink, border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>Guardar cambios</button>
+                    <button onClick={() => handleDeleteTask(editingTask.id)} style={{ padding: '12px 20px', background: PALETTE.danger, color: PALETTE.bone, border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>Eliminar</button>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>

@@ -1379,6 +1379,16 @@ export default function App() {
   var [owners, setOwners] = useState(INITIAL_OWNERS);
   var [showSettings, setShowSettings] = useState(false);
   var [showHistory, setShowHistory] = useState(false);
+  var [recentNotes, setRecentNotes] = useState([]);
+
+  // Cargar notas recientes (ultimas 24h) para badge de notificacion
+  useEffect(function() {
+    if (!isAuthenticated()) return;
+    var since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    dbSelect('task_notes', 'select=id,task_id,user_name,content,created_at&created_at=gte.' + since + '&order=created_at.desc&limit=20')
+      .then(function(notes) { setRecentNotes(notes || []); })
+      .catch(function() {});
+  }, [tasks]);
   var [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   var [isSaving, setIsSaving] = useState(false);
   var [lastSaved, setLastSaved] = useState(null);
@@ -1388,8 +1398,8 @@ export default function App() {
   // Keyboard shortcuts: Ctrl+Z = undo, Ctrl+Y = redo
   useEffect(function() {
     function handleKeyDown(e) {
-      if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) { e.preventDefault(); undo(); }
-      if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) { e.preventDefault(); redo(); }
+      if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) { e.preventDefault(); if (canEdit) undo(); }
+      if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) { e.preventDefault(); if (canEdit) redo(); }
     }
     window.addEventListener('keydown', handleKeyDown);
     return function() { window.removeEventListener('keydown', handleKeyDown); };
@@ -1546,16 +1556,15 @@ export default function App() {
 
   // Undo: revertir ultimo cambio
   function undo() {
-    if (undoStack.current.length === 0) return;
+    if (!canEdit || undoStack.current.length === 0) return;
     var prev = undoStack.current.pop();
     redoStack.current.push(tasks);
     setTasks(prev);
     persistTasks(prev);
   }
 
-  // Redo: rehacer ultimo undo
   function redo() {
-    if (redoStack.current.length === 0) return;
+    if (!canEdit || redoStack.current.length === 0) return;
     var next = redoStack.current.pop();
     undoStack.current.push(tasks);
     setTasks(next);
@@ -2003,10 +2012,22 @@ export default function App() {
 
 
         <div style={{ display: "flex", gap: 6 }}>
-          <button onClick={function() { setShowHistory(true); }} style={{ display: "flex", alignItems: "center", padding: 7, borderRadius: 6, border: "0.5px solid " + PALETTE.faint, background: "transparent", cursor: "pointer", color: PALETTE.muted }} title="Historial de versiones"><History size={14} /></button>
-          <button onClick={function() { setShowSettings(true); }} style={{ display: "flex", alignItems: "center", padding: 7, borderRadius: 6, border: "0.5px solid " + PALETTE.faint, background: "transparent", cursor: "pointer", color: PALETTE.muted }}><Users size={14} /></button>
-          <button onClick={undo} style={{ display: "flex", alignItems: "center", padding: 7, borderRadius: 6, border: "0.5px solid " + PALETTE.faint, background: "transparent", cursor: "pointer", color: undoStack.current.length > 0 ? PALETTE.lagune : PALETTE.faint, opacity: undoStack.current.length > 0 ? 1 : 0.4 }} title="Deshacer (Ctrl+Z)"><RotateCcw size={13} /></button>
-          <button onClick={redo} style={{ display: "flex", alignItems: "center", padding: 7, borderRadius: 6, border: "0.5px solid " + PALETTE.faint, background: "transparent", cursor: "pointer", color: redoStack.current.length > 0 ? PALETTE.lagune : PALETTE.faint, opacity: redoStack.current.length > 0 ? 1 : 0.4 }} title="Rehacer (Ctrl+Y)"><ArrowRight size={13} /></button>
+          {/* Notificaciones de notas */}
+          {recentNotes.length > 0 && (
+            <div style={{ position: "relative" }}>
+              <button onClick={function() {
+                var firstNote = recentNotes[0];
+                if (firstNote) { var t = tasks.find(function(tk) { return tk.id === firstNote.task_id; }); if (t) setModal(t); }
+              }} style={{ display: "flex", alignItems: "center", padding: 7, borderRadius: 6, border: "0.5px solid " + PALETTE.lagune + "40", background: PALETTE.lagune + "08", cursor: "pointer", color: PALETTE.lagune }} title={"" + recentNotes.length + " notas nuevas (24h)"}>
+                <MessageCircle size={14} />
+              </button>
+              <span style={{ position: "absolute", top: -4, right: -4, background: PALETTE.nectarine, color: "#fff", fontSize: 9, fontWeight: 700, width: 16, height: 16, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}>{recentNotes.length}</span>
+            </div>
+          )}
+          {canEdit && <button onClick={function() { setShowHistory(true); }} style={{ display: "flex", alignItems: "center", padding: 7, borderRadius: 6, border: "0.5px solid " + PALETTE.faint, background: "transparent", cursor: "pointer", color: PALETTE.muted }} title="Historial de versiones"><History size={14} /></button>}
+          {isAdmin && <button onClick={function() { setShowSettings(true); }} style={{ display: "flex", alignItems: "center", padding: 7, borderRadius: 6, border: "0.5px solid " + PALETTE.faint, background: "transparent", cursor: "pointer", color: PALETTE.muted }} title="Equipo"><Users size={14} /></button>}
+          {canEdit && <button onClick={undo} style={{ display: "flex", alignItems: "center", padding: 7, borderRadius: 6, border: "0.5px solid " + PALETTE.faint, background: "transparent", cursor: "pointer", color: undoStack.current.length > 0 ? PALETTE.lagune : PALETTE.faint, opacity: undoStack.current.length > 0 ? 1 : 0.4 }} title="Deshacer (Ctrl+Z)"><RotateCcw size={13} /></button>}
+          {canEdit && <button onClick={redo} style={{ display: "flex", alignItems: "center", padding: 7, borderRadius: 6, border: "0.5px solid " + PALETTE.faint, background: "transparent", cursor: "pointer", color: redoStack.current.length > 0 ? PALETTE.lagune : PALETTE.faint, opacity: redoStack.current.length > 0 ? 1 : 0.4 }} title="Rehacer (Ctrl+Y)"><ArrowRight size={13} /></button>}
           <div style={{ position: "relative" }}>
             <button onClick={function() { setShowExportMenu(!showExportMenu); }} style={{ display: "flex", alignItems: "center", padding: 7, borderRadius: 6, border: "0.5px solid " + PALETTE.faint, background: showExportMenu ? PALETTE.warm : "transparent", cursor: "pointer", color: PALETTE.muted }} title="Exportar"><Save size={13} /></button>
             {showExportMenu && (
