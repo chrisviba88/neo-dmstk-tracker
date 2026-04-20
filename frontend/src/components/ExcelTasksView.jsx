@@ -398,27 +398,36 @@ export default function ExcelTasksView({
         );
       }
 
-      case 'status':
+      case 'status': {
+        const stLabel = {Pendiente:'Pendiente','En curso':'En curso',Hecho:'Hecho'}[task.status] || task.status;
+        const stColor = STATUS_COLORS[task.status] || PALETTE.muted;
+        if (readOnly) return <td style={cellStyle}><span style={{ padding:'4px 8px', fontSize:12, borderRadius:6, background:stColor+'18', color:stColor, fontWeight:600 }}>{stLabel}</span></td>;
         return (
           <td style={cellStyle}>
             <EditableDropdown value={task.status} field="status" storageKey="neo-dmstk-opt-status" task={task} tasks={tasks} onUpdate={(id, changes) => safeUpdate?.(id, changes)} palette={PALETTE}
               options={[{value:'Pendiente',label:'Pendiente'},{value:'En curso',label:'En curso'},{value:'Hecho',label:'Hecho'}]}
-              style={{ width:'100%', padding:'6px 8px', fontSize:12, border:'none', borderRadius:6, background:(STATUS_COLORS[task.status]||PALETTE.muted)+'18', color:STATUS_COLORS[task.status]||PALETTE.muted, fontWeight:600, cursor:'pointer', outline:'none' }}
+              style={{ width:'100%', padding:'6px 8px', fontSize:12, border:'none', borderRadius:6, background:stColor+'18', color:stColor, fontWeight:600, cursor:'pointer', outline:'none' }}
             />
           </td>
         );
+      }
 
-      case 'priority':
+      case 'priority': {
+        const prLabel = {P0:'Critica',P1:'Alta',P2:'Media',P3:'Baja'}[task.priority] || task.priority;
+        const prColor = PRIORITY_COLORS[task.priority] || PALETTE.muted;
+        if (readOnly) return <td style={cellStyle}><span style={{ padding:'3px 6px', fontSize:11, borderRadius:4, background:prColor+'18', color:prColor, fontWeight:600 }}>{prLabel}</span></td>;
         return (
           <td style={cellStyle}>
             <EditableDropdown value={task.priority} field="priority" storageKey="neo-dmstk-opt-priority" task={task} tasks={tasks} onUpdate={(id, changes) => safeUpdate?.(id, changes)} palette={PALETTE}
               options={[{value:'P0',label:'Critica'},{value:'P1',label:'Alta'},{value:'P2',label:'Media'},{value:'P3',label:'Baja'}]}
-              style={{ width:'100%', padding:'6px 8px', fontSize:12, border:'none', borderRadius:6, background:(PRIORITY_COLORS[task.priority]||PALETTE.muted)+'18', color:PRIORITY_COLORS[task.priority]||PALETTE.muted, fontWeight:600, cursor:'pointer', outline:'none' }}
+              style={{ width:'100%', padding:'6px 8px', fontSize:12, border:'none', borderRadius:6, background:prColor+'18', color:prColor, fontWeight:600, cursor:'pointer', outline:'none' }}
             />
           </td>
         );
+      }
 
       case 'owner':
+        if (readOnly) return <td style={cellStyle}><span style={{ fontSize:12, color: task.owner && task.owner !== 'Por asignar' ? PALETTE.ink : PALETTE.muted, fontWeight: task.owner && task.owner !== 'Por asignar' ? 500 : 400 }}>{task.owner || 'Sin asignar'}</span></td>;
         return (
           <td style={cellStyle}>
             <select
@@ -436,54 +445,43 @@ export default function ExcelTasksView({
               }}
               onClick={(e) => e.stopPropagation()}
               style={{
-                width: '100%',
-                padding: '6px 8px',
-                fontSize: '12px',
-                border: `1px solid ${PALETTE.faint}`,
-                borderRadius: '6px',
+                width: '100%', padding: '6px 8px', fontSize: '12px',
+                border: `1px solid ${PALETTE.faint}`, borderRadius: '6px',
                 background: task.owner && task.owner !== 'Por asignar' ? PALETTE.lagune + '10' : PALETTE.bone,
-                color: PALETTE.ink,
-                cursor: 'pointer',
-                outline: 'none',
+                color: PALETTE.ink, cursor: 'pointer', outline: 'none',
                 fontWeight: task.owner && task.owner !== 'Por asignar' ? '500' : 'normal',
               }}
             >
               <option value="">- Por asignar -</option>
-              {owners.map(o => (
-                <option key={o} value={o}>{o}</option>
-              ))}
-              <option value="__new__">➕ Crear nuevo...</option>
+              {owners.map(o => (<option key={o} value={o}>{o}</option>))}
+              <option value="__new__">+ Crear nuevo...</option>
             </select>
           </td>
         );
 
       case 'startDate':
-      case 'endDate':
+      case 'endDate': {
         const today = new Date();
         const endDateVal = new Date(task.endDate);
         const isOverdue = column.key === 'endDate' && task.status !== 'Hecho' && endDateVal < today;
+        const dateStr = task[column.key] ? new Date(task[column.key] + 'T00:00:00').toLocaleDateString('es-ES', { day:'numeric', month:'short' }) : '-';
 
+        if (readOnly) return <td style={cellStyle}><span style={{ fontSize:12, color: isOverdue ? PALETTE.danger : PALETTE.ink, fontWeight: isOverdue ? 600 : 400 }}>{dateStr}</span></td>;
         return (
           <td style={cellStyle}>
-            <input
-              type="date"
-              value={task[column.key] || ''}
+            <input type="date" value={task[column.key] || ''}
               onChange={(e) => safeUpdate?.(task.id, { [column.key]: e.target.value })}
               onClick={(e) => e.stopPropagation()}
               style={{
-                width: '100%',
-                padding: '6px 8px',
-                fontSize: '12px',
+                width: '100%', padding: '6px 8px', fontSize: '12px',
                 border: `1px solid ${isOverdue ? PALETTE.danger : PALETTE.faint}`,
-                borderRadius: '6px',
-                background: isOverdue ? PALETTE.danger + '10' : PALETTE.bone,
-                color: isOverdue ? PALETTE.danger : PALETTE.ink,
-                cursor: 'pointer',
-                outline: 'none',
+                borderRadius: '6px', background: isOverdue ? PALETTE.danger + '10' : PALETTE.bone,
+                color: isOverdue ? PALETTE.danger : PALETTE.ink, cursor: 'pointer', outline: 'none',
               }}
             />
           </td>
         );
+      }
 
       case 'actions':
         if (readOnly) return <td style={{ ...cellStyle, textAlign: 'center' }} />;
@@ -523,17 +521,22 @@ export default function ExcelTasksView({
           </td>
         );
 
-      case 'level':
+      case 'level': {
+        const lvColor = task.level === 'epic' ? PALETTE.mostaza : PALETTE.lagune;
+        const lvLabel = task.level === 'epic' ? 'Iniciativa' : 'Tarea';
+        if (readOnly) return <td style={cellStyle}><span style={{ fontSize:11, padding:'2px 6px', borderRadius:4, background:lvColor+'18', color:lvColor, fontWeight:600 }}>{lvLabel}</span></td>;
         return (
           <td style={cellStyle}>
-            <select value={task.level || 'task'} onChange={(e) => safeUpdate?.(task.id, { level: e.target.value })} onClick={(e) => e.stopPropagation()} disabled={readOnly} style={{ fontSize: 11, padding: '3px 6px', borderRadius: 4, border: 'none', background: task.level === 'epic' ? PALETTE.mostaza + '18' : PALETTE.lagune + '12', color: task.level === 'epic' ? PALETTE.mostaza : PALETTE.lagune, fontWeight: 600, cursor: readOnly ? 'default' : 'pointer', opacity: readOnly ? 0.7 : 1 }}>
+            <select value={task.level || 'task'} onChange={(e) => safeUpdate?.(task.id, { level: e.target.value })} onClick={(e) => e.stopPropagation()} style={{ fontSize: 11, padding: '3px 6px', borderRadius: 4, border: 'none', background: lvColor + '18', color: lvColor, fontWeight: 600, cursor: 'pointer' }}>
               <option value="epic">Iniciativa</option>
               <option value="task">Tarea</option>
             </select>
           </td>
         );
+      }
 
       case 'familyLabel':
+        if (readOnly) return <td style={cellStyle}><span style={{ fontSize:11, color:PALETTE.ink }}>{task.familyLabel || task.family || '-'}</span></td>;
         return (
           <td style={cellStyle}>
             <EditableDropdown value={task.family} field="family" labelField="familyLabel" storageKey="neo-dmstk-opt-family" task={task} tasks={tasks} onUpdate={(id, changes) => safeUpdate?.(id, changes)} palette={PALETTE}
@@ -556,6 +559,8 @@ export default function ExcelTasksView({
         const stgOpts = getOptions('neo-dmstk-opt-stage', [{value:'pre',label:'Pre-produccion'},{value:'prod',label:'Produccion'},{value:'pilot',label:'Piloto'},{value:'launch',label:'Lanzamiento'},{value:'post',label:'Post / Ops'}]);
         const stgColors = {pre:'#64748b',prod:'#f59e0b',pilot:'#8b5cf6',launch:'#10b981',post:'#3b82f6'};
         const sc = stgColors[task.stage] || PALETTE.muted;
+        const stgLabel = stgOpts.find(o => o.value === task.stage)?.label || task.stage || '-';
+        if (readOnly) return <td style={cellStyle}><span style={{ fontSize:10, padding:'2px 6px', borderRadius:4, background:sc+'18', color:sc, fontWeight:600 }}>{stgLabel}</span></td>;
         return (
           <td style={cellStyle}>
             <EditableDropdown value={task.stage} field="stage" storageKey="neo-dmstk-opt-stage" task={task} tasks={tasks} onUpdate={(id, changes) => safeUpdate?.(id, changes)} palette={PALETTE}
@@ -569,6 +574,8 @@ export default function ExcelTasksView({
       case 'risk': {
         const riskColors = {CRITICO:PALETTE.danger, ALTO:'#f59e0b', MEDIO:PALETTE.lagune, BAJO:PALETTE.menthe};
         const rc = riskColors[task.risk] || PALETTE.muted;
+        const riskLabel = {CRITICO:'Critico',ALTO:'Alto',MEDIO:'Medio',BAJO:'Bajo'}[task.risk] || task.risk || '-';
+        if (readOnly) return <td style={cellStyle}><span style={{ fontSize:10, padding:'2px 6px', borderRadius:4, background:rc+'18', color:rc, fontWeight:600 }}>{riskLabel}</span></td>;
         return (
           <td style={cellStyle}>
             <EditableDropdown value={task.risk} field="risk" storageKey="neo-dmstk-opt-risk" task={task} tasks={tasks} onUpdate={(id, changes) => safeUpdate?.(id, changes)} palette={PALETTE}
@@ -579,17 +586,24 @@ export default function ExcelTasksView({
         );
       }
 
-      case 'scope':
+      case 'scope': {
+        const scColor = task.scope==='global' ? '#a78bfa' : '#fb923c';
+        const scLabel = task.scope==='global' ? 'Global' : 'Espacio';
+        if (readOnly) return <td style={cellStyle}><span style={{ fontSize:11, padding:'2px 6px', borderRadius:4, background:scColor+'18', color:scColor, fontWeight:500 }}>{scLabel}</span></td>;
         return (
           <td style={cellStyle}>
             <EditableDropdown value={task.scope} field="scope" storageKey="neo-dmstk-opt-scope" task={task} tasks={tasks} onUpdate={(id, changes) => safeUpdate?.(id, changes)} palette={PALETTE}
               options={[{value:'global',label:'Global'},{value:'space',label:'Espacio'}]}
-              style={{ fontSize:11, padding:'3px 6px', borderRadius:4, border:'none', background:task.scope==='global'?'#a78bfa18':'#fb923c18', color:task.scope==='global'?'#a78bfa':'#fb923c', fontWeight:500, cursor:'pointer' }}
+              style={{ fontSize:11, padding:'3px 6px', borderRadius:4, border:'none', background:scColor+'18', color:scColor, fontWeight:500, cursor:'pointer' }}
             />
           </td>
         );
+      }
 
-      case 'milestone':
+      case 'milestone': {
+        const msOpts = [{value:'',label:'-'},{value:'piloto',label:'Piloto'},{value:'goNoGo',label:'GO/NO-GO'},{value:'reformaE1',label:'Reforma E1'},{value:'softOpeningE1',label:'Soft Opening E1'},{value:'grandOpeningE1',label:'Grand Opening E1'},{value:'softOpeningE2',label:'E2 BCN'}];
+        const msLabel = msOpts.find(o => o.value === (task.milestone || ''))?.label || task.milestone || '-';
+        if (readOnly) return <td style={cellStyle}><span style={{ fontSize:10, color:PALETTE.soft }}>{msLabel}</span></td>;
         return (
           <td style={cellStyle}>
             <EditableDropdown value={task.milestone || ''} field="milestone" storageKey="neo-dmstk-opt-milestone" task={task} tasks={tasks} onUpdate={(id, changes) => safeUpdate?.(id, changes)} palette={PALETTE}
@@ -598,11 +612,13 @@ export default function ExcelTasksView({
             />
           </td>
         );
+      }
 
       case 'notes':
+        if (readOnly) return <td style={cellStyle}><span style={{ fontSize:11, color:PALETTE.muted }}>{task.notes || '-'}</span></td>;
         return (
           <td style={cellStyle} onClick={(e) => e.stopPropagation()}>
-            <input type="text" value={task.notes || ''} onChange={(e) => safeUpdate?.(task.id, { notes: e.target.value })} placeholder="..." readOnly={readOnly} style={{ width: '100%', fontSize: 11, padding: '4px 6px', borderRadius: 4, border: `1px solid ${PALETTE.faint}`, background: PALETTE.bone, color: PALETTE.muted, outline: 'none', opacity: readOnly ? 0.7 : 1 }} />
+            <input type="text" value={task.notes || ''} onChange={(e) => safeUpdate?.(task.id, { notes: e.target.value })} placeholder="..." style={{ width: '100%', fontSize: 11, padding: '4px 6px', borderRadius: 4, border: `1px solid ${PALETTE.faint}`, background: PALETTE.bone, color: PALETTE.muted, outline: 'none' }} />
           </td>
         );
 
