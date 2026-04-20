@@ -2,25 +2,18 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import {
   LayoutDashboard, List, CalendarRange, Plus, X, Search,
   AlertTriangle, Trash2, RotateCcw, ChevronDown, ChevronRight,
-  Save, ArrowUpDown, Link2, Users, ArrowRight, Wifi, WifiOff, MessageCircle, TrendingUp, History, Eye, EyeOff, Check
+  Save, ArrowUpDown, Link2, Users, ArrowRight, Wifi, WifiOff, MessageCircle, TrendingUp, History, Eye, EyeOff, Check,
+  LogOut, User as UserIcon
 } from "lucide-react";
-import { createClient } from '@supabase/supabase-js';
 import io from 'socket.io-client';
+import { supabase, BACKEND_URL } from './lib/supabase';
+import { useAuth } from './contexts/AuthContext';
 import GlobalSearch from './components/GlobalSearch';
 import ViewManager from './components/ViewManager';
 import ExcelTasksView from './components/ExcelTasksView';
 import SummaryTimelineView from './components/SummaryTimelineView';
 import { TASKS_V2, FAMILIES, PILLARS, STAGES, MILESTONES } from './data/tasks-v2';
 import PMAgent, { StaticAlerts } from './components/PMAgent';
-
-// Configuración de Supabase y Backend
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
-
-const supabase = SUPABASE_URL && SUPABASE_ANON_KEY
-  ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
-  : null;
 
 let socket;
 
@@ -1229,6 +1222,7 @@ function SettingsPanel({ owners, addOwner, mergeOwners, onClose }) {
 }
 
 export default function App() {
+  const { user, profile, signOut, canEdit, isAdmin } = useAuth();
   var [tasks, setTasks] = useState([]);
   var [loading, setLoading] = useState(true);
   var [isConnected, setIsConnected] = useState(false);
@@ -1297,7 +1291,7 @@ export default function App() {
       socket.on('connect', () => {
         console.log('✅ Conectado al servidor');
         setIsConnected(true);
-        socket.emit('user:join', { name: 'Usuario', timestamp: new Date() });
+        socket.emit('user:join', { name: profile?.display_name || user?.email || 'Usuario', timestamp: new Date() });
       });
 
       socket.on('disconnect', () => {
@@ -1792,6 +1786,17 @@ export default function App() {
         </div>
 
         <ConnectionStatus isConnected={isConnected} usersOnline={usersOnline} />
+
+        {/* Usuario actual */}
+        <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "4px 10px", borderRadius: 6, background: PALETTE.warm, fontSize: 11, color: PALETTE.soft }}>
+          <UserIcon size={13} />
+          <span style={{ fontWeight: 500 }}>{profile?.display_name || user?.email}</span>
+          <span style={{ fontSize: 9, padding: "1px 5px", borderRadius: 3, background: isAdmin ? PALETTE.nectarine + '30' : PALETTE.lagune + '20', color: isAdmin ? PALETTE.nectarine : PALETTE.lagune, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+            {profile?.role}
+          </span>
+          <button onClick={signOut} style={{ background: "none", border: "none", cursor: "pointer", color: PALETTE.muted, padding: 2, display: "flex" }} title="Cerrar sesion"><LogOut size={13} /></button>
+        </div>
+
         <nav style={{ display: "flex", gap: 2, background: PALETTE.warm, borderRadius: 8, padding: 2 }}>
           {[["dashboard", LayoutDashboard, "Dashboard"], ["tasks", List, "Tareas"], ["timeline", CalendarRange, "Timeline"]].map(function(item) {
             var v = item[0], Ic = item[1], lb = item[2];
@@ -1811,7 +1816,7 @@ export default function App() {
           <button onClick={undo} style={{ display: "flex", alignItems: "center", padding: 7, borderRadius: 6, border: "0.5px solid " + PALETTE.faint, background: "transparent", cursor: "pointer", color: undoStack.current.length > 0 ? PALETTE.lagune : PALETTE.faint, opacity: undoStack.current.length > 0 ? 1 : 0.4 }} title="Deshacer (Ctrl+Z)"><RotateCcw size={13} /></button>
           <button onClick={redo} style={{ display: "flex", alignItems: "center", padding: 7, borderRadius: 6, border: "0.5px solid " + PALETTE.faint, background: "transparent", cursor: "pointer", color: redoStack.current.length > 0 ? PALETTE.lagune : PALETTE.faint, opacity: redoStack.current.length > 0 ? 1 : 0.4 }} title="Rehacer (Ctrl+Y)"><ArrowRight size={13} /></button>
           <button onClick={exportData} style={{ display: "flex", alignItems: "center", padding: 7, borderRadius: 6, border: "0.5px solid " + PALETTE.faint, background: "transparent", cursor: "pointer", color: PALETTE.muted }} title="Descargar backup"><Save size={13} /></button>
-          <button onClick={function() { setModal(newTaskDefaults); }} style={{ display: "flex", alignItems: "center", gap: 4, padding: "7px 14px", borderRadius: 8, fontSize: 12, fontWeight: 500, background: PALETTE.nectarine, color: "#fff", border: "none", cursor: "pointer" }}><Plus size={14} />Nueva tarea</button>
+          {canEdit && <button onClick={function() { setModal(newTaskDefaults); }} style={{ display: "flex", alignItems: "center", gap: 4, padding: "7px 14px", borderRadius: 8, fontSize: 12, fontWeight: 500, background: PALETTE.nectarine, color: "#fff", border: "none", cursor: "pointer" }}><Plus size={14} />Nueva tarea</button>}
 
           {/* Guardado automatico + Reset */}
           {lastSaved ? (
