@@ -15,6 +15,7 @@ import ExcelTasksView from './components/ExcelTasksView';
 import SummaryTimelineView from './components/SummaryTimelineView';
 import { TASKS_V2, FAMILIES, PILLARS, STAGES, MILESTONES } from './data/tasks-v2';
 import PMAgent, { StaticAlerts, DailyBriefing } from './components/PMAgent';
+import TaskNotes from './components/TaskNotes';
 
 const PALETTE = {
   nectarine: "#D7897F",
@@ -1050,7 +1051,7 @@ function DependencyImpactModal({ task, newEndDate, impactData, onConfirm, onCanc
   );
 }
 
-function TaskModal({ task, owners, addOwner, tasks, onSave, onClose, onDelete }) {
+function TaskModal({ task, owners, addOwner, tasks, onSave, onClose, onDelete, readOnly }) {
   var [form, setForm] = useState({ ...task });
   var isNew = !task.id;
   function set(key, val) { setForm(function(prev) { return { ...prev, [key]: val }; }); }
@@ -1149,9 +1150,16 @@ function TaskModal({ task, owners, addOwner, tasks, onSave, onClose, onDelete })
           </div>
 
           <FieldLabel label="Notas">
-            <textarea value={form.notes} onChange={function(e) { set("notes", e.target.value); }} rows={2}
-              style={{ ...inputStyle, fontSize: 13, resize: "vertical" }} placeholder="Notas…" />
+            {readOnly ? (
+              <div style={{ fontSize: 13, color: PALETTE.soft, padding: "8px 0" }}>{form.notes || 'Sin notas'}</div>
+            ) : (
+              <textarea value={form.notes} onChange={function(e) { set("notes", e.target.value); }} rows={2}
+                style={{ ...inputStyle, fontSize: 13, resize: "vertical" }} placeholder="Notas…" />
+            )}
           </FieldLabel>
+
+          {/* Notas del equipo — todos pueden escribir, incluso viewers */}
+          {!isNew && <TaskNotes taskId={form.id} taskName={form.name} />}
         </div>
 
         <div style={{ padding: "16px 28px", borderTop: "1px solid " + PALETTE.faint, display: "flex", justifyContent: "space-between", alignItems: "center", background: PALETTE.warm }}>
@@ -1161,11 +1169,11 @@ function TaskModal({ task, owners, addOwner, tasks, onSave, onClose, onDelete })
             </button>
           ) : <div />}
           <div style={{ display: "flex", gap: 10 }}>
-            <button onClick={onClose} style={{ padding: "10px 20px", borderRadius: 8, fontSize: 13, border: "1px solid " + PALETTE.faint, background: "transparent", cursor: "pointer", color: PALETTE.soft }}>Cancelar</button>
-            <button onClick={function() { if (form.name.trim()) onSave(form); }}
+            <button onClick={onClose} style={{ padding: "10px 20px", borderRadius: 8, fontSize: 13, border: "1px solid " + PALETTE.faint, background: "transparent", cursor: "pointer", color: PALETTE.soft }}>{readOnly ? 'Cerrar' : 'Cancelar'}</button>
+            {onSave && <button onClick={function() { if (form.name.trim()) onSave(form); }}
               style={{ padding: "10px 24px", borderRadius: 8, fontSize: 14, fontWeight: 500, border: "none", background: PALETTE.nectarine, color: "#fff", cursor: "pointer", fontFamily: SERIF, display: "flex", alignItems: "center", gap: 6 }}>
               <Save size={14} />Guardar
-            </button>
+            </button>}
           </div>
         </div>
       </div>
@@ -1177,6 +1185,24 @@ function SettingsPanel({ owners, addOwner, mergeOwners, onClose, isAdmin }) {
   var [newName, setNewName] = useState("");
   var [mergeFrom, setMergeFrom] = useState("");
   var [mergeTo, setMergeTo] = useState("");
+  var [inviteEmail, setInviteEmail] = useState("");
+  var [inviteMsg, setInviteMsg] = useState("");
+
+  var appUrl = window.location.origin;
+
+  function copyInviteLink() {
+    var link = appUrl;
+    var msg = "Te invito al tracker de DMSTK HOUSES.\n\n1. Abre: " + link + "\n2. Click en 'Crear cuenta'\n3. Usa tu email y elige una contrasena\n4. Listo, podras ver el proyecto";
+    if (inviteEmail.trim()) {
+      msg = "Hola! " + msg;
+    }
+    navigator.clipboard.writeText(msg).then(function() {
+      setInviteMsg("Link copiado al clipboard");
+      setTimeout(function() { setInviteMsg(""); }, 3000);
+    }).catch(function() {
+      setInviteMsg("Error al copiar");
+    });
+  }
   var [profiles, setProfiles] = useState([]);
   var [loadingProfiles, setLoadingProfiles] = useState(false);
 
@@ -1236,6 +1262,22 @@ function SettingsPanel({ owners, addOwner, mergeOwners, onClose, isAdmin }) {
                   })}
                 </div>
               )}
+            </div>
+          )}
+
+          {/* Invitar personas */}
+          {isAdmin && (
+            <div style={{ marginBottom: 24 }}>
+              <div style={{ fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: ".8px", color: PALETTE.lagune, fontFamily: "var(--font-mono)", marginBottom: 10 }}>Invitar al equipo</div>
+              <div style={{ fontSize: 11, color: PALETTE.soft, marginBottom: 8 }}>Genera un mensaje con las instrucciones para unirse. Copialo y envialo por WhatsApp, email o Slack.</div>
+              <div style={{ display: "flex", gap: 6 }}>
+                <input value={inviteEmail} onChange={function(e) { setInviteEmail(e.target.value); }} placeholder="Email del invitado (opcional)"
+                  style={{ flex: 1, fontSize: 12, padding: "8px 12px", borderRadius: 8, border: "1px solid " + PALETTE.faint }} />
+                <button onClick={copyInviteLink}
+                  style={{ padding: "8px 14px", borderRadius: 8, fontSize: 12, fontWeight: 500, background: PALETTE.lagune, color: "#fff", border: "none", cursor: "pointer", whiteSpace: "nowrap" }}>Copiar invitacion</button>
+              </div>
+              {inviteMsg && <div style={{ fontSize: 11, color: PALETTE.menthe, marginTop: 6 }}>{inviteMsg}</div>}
+              <div style={{ fontSize: 10, color: PALETTE.muted, marginTop: 6 }}>Los nuevos usuarios entran como Viewer. Puedes cambiar su rol arriba.</div>
             </div>
           )}
 
