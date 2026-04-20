@@ -1382,15 +1382,16 @@ export default function App() {
   var [recentNotes, setRecentNotes] = useState([]);
 
   // Cargar notas recientes (ultimas 24h) para badge de notificacion
+  var [notesError, setNotesError] = useState('');
   useEffect(function() {
-    if (!isAuthenticated()) return;
+    if (!isAuthenticated()) { setNotesError('no-auth'); return; }
     var since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-    dbSelect('task_notes', 'select=id,task_id,user_name,content,created_at&created_at=gte.' + encodeURIComponent(since) + '&order=created_at.desc&limit=20')
+    dbSelect('task_notes', 'select=id,task_id,user_name,content,created_at&order=created_at.desc&limit=20')
       .then(function(notes) {
-        console.log('[Notes] Recientes:', notes?.length || 0);
         setRecentNotes(notes || []);
+        setNotesError('');
       })
-      .catch(function(err) { console.warn('[Notes] Error cargando recientes:', err.message); });
+      .catch(function(err) { setNotesError(err.message); });
   }, [tasks]);
   var [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   var [isSaving, setIsSaving] = useState(false);
@@ -2016,17 +2017,18 @@ export default function App() {
 
         <div style={{ display: "flex", gap: 6 }}>
           {/* Notificaciones de notas */}
-          {recentNotes.length > 0 && (
-            <div style={{ position: "relative" }}>
-              <button onClick={function() {
+          <div style={{ position: "relative" }}>
+            <button onClick={function() {
+              if (recentNotes.length > 0) {
                 var firstNote = recentNotes[0];
                 if (firstNote) { var t = tasks.find(function(tk) { return tk.id === firstNote.task_id; }); if (t) setModal(t); }
-              }} style={{ display: "flex", alignItems: "center", padding: 7, borderRadius: 6, border: "0.5px solid " + PALETTE.lagune + "40", background: PALETTE.lagune + "08", cursor: "pointer", color: PALETTE.lagune }} title={"" + recentNotes.length + " notas nuevas (24h)"}>
-                <MessageCircle size={14} />
-              </button>
-              <span style={{ position: "absolute", top: -4, right: -4, background: PALETTE.nectarine, color: "#fff", fontSize: 9, fontWeight: 700, width: 16, height: 16, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}>{recentNotes.length}</span>
-            </div>
-          )}
+              }
+            }} style={{ display: "flex", alignItems: "center", padding: 7, borderRadius: 6, border: "0.5px solid " + (recentNotes.length > 0 ? PALETTE.lagune + "40" : PALETTE.faint), background: recentNotes.length > 0 ? PALETTE.lagune + "08" : "transparent", cursor: "pointer", color: recentNotes.length > 0 ? PALETTE.lagune : PALETTE.muted }} title={notesError ? "Error: " + notesError : recentNotes.length + " notas recientes"}>
+              <MessageCircle size={14} />
+            </button>
+            {recentNotes.length > 0 && <span style={{ position: "absolute", top: -4, right: -4, background: PALETTE.nectarine, color: "#fff", fontSize: 9, fontWeight: 700, minWidth: 16, height: 16, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 3px" }}>{recentNotes.length}</span>}
+            {notesError && <span style={{ position: "absolute", top: -4, right: -4, background: PALETTE.danger, color: "#fff", fontSize: 8, width: 12, height: 12, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}>!</span>}
+          </div>
           {canEdit && <button onClick={function() { setShowHistory(true); }} style={{ display: "flex", alignItems: "center", padding: 7, borderRadius: 6, border: "0.5px solid " + PALETTE.faint, background: "transparent", cursor: "pointer", color: PALETTE.muted }} title="Historial de versiones"><History size={14} /></button>}
           {isAdmin && <button onClick={function() { setShowSettings(true); }} style={{ display: "flex", alignItems: "center", padding: 7, borderRadius: 6, border: "0.5px solid " + PALETTE.faint, background: "transparent", cursor: "pointer", color: PALETTE.muted }} title="Equipo"><Users size={14} /></button>}
           {canEdit && <button onClick={undo} style={{ display: "flex", alignItems: "center", padding: 7, borderRadius: 6, border: "0.5px solid " + PALETTE.faint, background: "transparent", cursor: "pointer", color: undoStack.current.length > 0 ? PALETTE.lagune : PALETTE.faint, opacity: undoStack.current.length > 0 ? 1 : 0.4 }} title="Deshacer (Ctrl+Z)"><RotateCcw size={13} /></button>}
