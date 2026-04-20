@@ -1498,20 +1498,69 @@ export default function App() {
   }
 
   // Export: descargar JSON del estado actual
-  function exportData() {
-    var data = {
-      version: 'v2',
-      exportedAt: new Date().toISOString(),
-      taskCount: tasks.length,
-      tasks: tasks
-    };
-    var blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  var [showExportMenu, setShowExportMenu] = useState(false);
+
+  function exportCSV() {
+    var headers = ['ID','Nombre','Area','Nivel','Estado','Prioridad','Owner','Inicio','Fin','Etapa','Riesgo','Alcance','Hito','Notas'];
+    var rows = tasks.map(function(t) {
+      return [t.id, t.name, t.familyLabel||t.family, t.level==='epic'?'Iniciativa':'Tarea', t.status, {P0:'Critica',P1:'Alta',P2:'Media',P3:'Baja'}[t.priority]||t.priority, t.owner, t.startDate, t.endDate, t.stage, t.risk, t.scope, t.milestone, t.notes||''].map(function(v) { return '"' + String(v||'').replace(/"/g, '""') + '"'; }).join(',');
+    });
+    var csv = [headers.join(','), ...rows].join('\n');
+    var blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' });
     var url = URL.createObjectURL(blob);
-    var a = document.createElement('a');
-    a.href = url;
-    a.download = 'neo-dmstk-backup-' + new Date().toISOString().split('T')[0] + '.json';
-    a.click();
+    var a = document.createElement('a'); a.href = url; a.download = 'DMSTK-tareas-' + new Date().toISOString().split('T')[0] + '.csv'; a.click();
     URL.revokeObjectURL(url);
+    setShowExportMenu(false);
+  }
+
+  function exportHTML() {
+    var today = new Date().toISOString().split('T')[0];
+    var total = tasks.length;
+    var done = tasks.filter(function(t) { return t.status === 'Hecho'; }).length;
+    var inProgress = tasks.filter(function(t) { return t.status === 'En curso'; }).length;
+    var overdue = tasks.filter(function(t) { return t.status !== 'Hecho' && t.endDate < today; });
+    var p0 = tasks.filter(function(t) { return t.priority === 'P0' && t.status !== 'Hecho'; });
+
+    var byFamily = {};
+    tasks.forEach(function(t) {
+      var key = t.familyLabel || t.family || 'Otro';
+      if (!byFamily[key]) byFamily[key] = { total: 0, done: 0, overdue: 0 };
+      byFamily[key].total++;
+      if (t.status === 'Hecho') byFamily[key].done++;
+      if (t.status !== 'Hecho' && t.endDate < today) byFamily[key].overdue++;
+    });
+
+    var familyRows = Object.entries(byFamily).map(function(e) {
+      var pct = Math.round(e[1].done / e[1].total * 100);
+      return '<tr><td>' + e[0] + '</td><td>' + e[1].done + '/' + e[1].total + '</td><td><div style="background:#e5e5e5;border-radius:4px;height:8px;width:120px"><div style="background:#96C7B3;height:100%;border-radius:4px;width:' + pct + '%"></div></div></td><td style="color:' + (e[1].overdue > 0 ? '#C0564A' : '#9A948C') + '">' + e[1].overdue + '</td></tr>';
+    }).join('');
+
+    var overdueRows = overdue.slice(0, 15).map(function(t) {
+      var days = Math.abs(Math.ceil((new Date(t.endDate) - new Date()) / 864e5));
+      return '<tr><td>' + t.name + '</td><td>' + (t.familyLabel||t.family) + '</td><td>' + t.owner + '</td><td style="color:#C0564A;font-weight:600">' + days + 'd</td></tr>';
+    }).join('');
+
+    var p0Rows = p0.map(function(t) {
+      return '<tr><td>' + t.name + '</td><td>' + t.owner + '</td><td>' + t.status + '</td><td>' + t.endDate + '</td></tr>';
+    }).join('');
+
+    var html = '<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>DMSTK — Resumen Ejecutivo ' + today + '</title><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:"DM Sans",-apple-system,sans-serif;background:#FAF8F4;color:#2C2926;padding:40px;max-width:900px;margin:0 auto}h1{font-family:Georgia,serif;font-size:28px;font-weight:400;margin-bottom:4px}h2{font-size:14px;font-weight:600;text-transform:uppercase;letter-spacing:1.5px;color:#9A948C;margin:32px 0 12px;border-bottom:1px solid #D8D2CA;padding-bottom:6px}.subtitle{font-size:13px;color:#9A948C;margin-bottom:32px}.kpi{display:inline-block;text-align:center;padding:16px 24px;background:#fff;border-radius:12px;border:1px solid #D8D2CA30;margin:0 8px 8px 0}.kpi .num{font-size:28px;font-weight:700;font-family:Georgia,serif}.kpi .label{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#9A948C;margin-top:4px}table{width:100%;border-collapse:collapse;margin-bottom:8px}th{text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:#9A948C;padding:8px 10px;border-bottom:1px solid #D8D2CA}td{font-size:12px;padding:6px 10px;border-bottom:1px solid #D8D2CA20}.footer{margin-top:40px;font-size:10px;color:#9A948C;text-align:center}</style></head><body>';
+    html += '<h1>DMSTK <span style="color:#D7897F">HOUSES</span></h1><div class="subtitle">Resumen ejecutivo — ' + today + '</div>';
+    html += '<div><div class="kpi"><div class="num">' + total + '</div><div class="label">Tareas</div></div>';
+    html += '<div class="kpi"><div class="num" style="color:#96C7B3">' + Math.round(done/total*100) + '%</div><div class="label">Completado</div></div>';
+    html += '<div class="kpi"><div class="num" style="color:#E2B93B">' + inProgress + '</div><div class="label">En curso</div></div>';
+    html += '<div class="kpi"><div class="num" style="color:#C0564A">' + overdue.length + '</div><div class="label">Vencidas</div></div>';
+    html += '<div class="kpi"><div class="num" style="color:#D7897F">' + p0.length + '</div><div class="label">Criticas</div></div></div>';
+    html += '<h2>Progreso por area</h2><table><tr><th>Area</th><th>Progreso</th><th></th><th>Vencidas</th></tr>' + familyRows + '</table>';
+    if (overdue.length > 0) html += '<h2>Tareas vencidas (' + overdue.length + ')</h2><table><tr><th>Tarea</th><th>Area</th><th>Owner</th><th>Retraso</th></tr>' + overdueRows + '</table>';
+    if (p0.length > 0) html += '<h2>Criticas pendientes (' + p0.length + ')</h2><table><tr><th>Tarea</th><th>Owner</th><th>Estado</th><th>Fecha fin</th></tr>' + p0Rows + '</table>';
+    html += '<div class="footer">Generado desde DMSTK Tracker — ' + new Date().toLocaleString('es-ES') + '</div></body></html>';
+
+    var blob = new Blob([html], { type: 'text/html' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a'); a.href = url; a.download = 'DMSTK-resumen-' + today + '.html'; a.click();
+    URL.revokeObjectURL(url);
+    setShowExportMenu(false);
   }
 
   // Import: cargar JSON
@@ -1893,7 +1942,19 @@ export default function App() {
           <button onClick={function() { setShowSettings(true); }} style={{ display: "flex", alignItems: "center", padding: 7, borderRadius: 6, border: "0.5px solid " + PALETTE.faint, background: "transparent", cursor: "pointer", color: PALETTE.muted }}><Users size={14} /></button>
           <button onClick={undo} style={{ display: "flex", alignItems: "center", padding: 7, borderRadius: 6, border: "0.5px solid " + PALETTE.faint, background: "transparent", cursor: "pointer", color: undoStack.current.length > 0 ? PALETTE.lagune : PALETTE.faint, opacity: undoStack.current.length > 0 ? 1 : 0.4 }} title="Deshacer (Ctrl+Z)"><RotateCcw size={13} /></button>
           <button onClick={redo} style={{ display: "flex", alignItems: "center", padding: 7, borderRadius: 6, border: "0.5px solid " + PALETTE.faint, background: "transparent", cursor: "pointer", color: redoStack.current.length > 0 ? PALETTE.lagune : PALETTE.faint, opacity: redoStack.current.length > 0 ? 1 : 0.4 }} title="Rehacer (Ctrl+Y)"><ArrowRight size={13} /></button>
-          <button onClick={exportData} style={{ display: "flex", alignItems: "center", padding: 7, borderRadius: 6, border: "0.5px solid " + PALETTE.faint, background: "transparent", cursor: "pointer", color: PALETTE.muted }} title="Descargar backup"><Save size={13} /></button>
+          <div style={{ position: "relative" }}>
+            <button onClick={function() { setShowExportMenu(!showExportMenu); }} style={{ display: "flex", alignItems: "center", padding: 7, borderRadius: 6, border: "0.5px solid " + PALETTE.faint, background: showExportMenu ? PALETTE.warm : "transparent", cursor: "pointer", color: PALETTE.muted }} title="Exportar"><Save size={13} /></button>
+            {showExportMenu && (
+              <div style={{ position: "absolute", top: "100%", right: 0, marginTop: 4, background: PALETTE.bone, borderRadius: 8, border: "1px solid " + PALETTE.faint, boxShadow: "0 8px 24px rgba(0,0,0,0.1)", zIndex: 100, minWidth: 200, overflow: "hidden" }}>
+                <button onClick={exportHTML} style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "10px 14px", border: "none", background: "transparent", cursor: "pointer", color: PALETTE.ink, fontSize: 12, textAlign: "left" }} onMouseEnter={function(e){e.target.style.background=PALETTE.warm}} onMouseLeave={function(e){e.target.style.background='transparent'}}>
+                  <span style={{ fontSize: 14 }}>📊</span> Resumen ejecutivo (HTML)
+                </button>
+                <button onClick={exportCSV} style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "10px 14px", border: "none", borderTop: "1px solid " + PALETTE.faint + "40", background: "transparent", cursor: "pointer", color: PALETTE.ink, fontSize: 12, textAlign: "left" }} onMouseEnter={function(e){e.target.style.background=PALETTE.warm}} onMouseLeave={function(e){e.target.style.background='transparent'}}>
+                  <span style={{ fontSize: 14 }}>📋</span> Tabla completa (CSV)
+                </button>
+              </div>
+            )}
+          </div>
           {canEdit && <button onClick={function() { setModal(newTaskDefaults); }} style={{ display: "flex", alignItems: "center", gap: 4, padding: "7px 14px", borderRadius: 8, fontSize: 12, fontWeight: 500, background: PALETTE.nectarine, color: "#fff", border: "none", cursor: "pointer" }}><Plus size={14} />Nueva tarea</button>}
 
           {/* Guardado automatico + Reset */}
