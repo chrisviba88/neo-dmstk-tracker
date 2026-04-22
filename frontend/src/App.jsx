@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
+import { createPortal } from "react-dom";
 import {
   LayoutDashboard, List, CalendarRange, Plus, X, Search,
   AlertTriangle, Trash2, RotateCcw, ChevronDown, ChevronRight,
@@ -1061,8 +1062,8 @@ function TaskModal({ task, owners, addOwner, tasks, onSave, onClose, onDelete, r
   }
   var inputStyle = { fontSize: 14, padding: "10px 14px", borderRadius: 8, border: "1px solid " + PALETTE.faint, background: "#fff", width: "100%", color: PALETTE.ink };
 
-  return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 500, background: "rgba(44,41,38,0.5)", display: "flex", justifyContent: "center", paddingTop: 30 }}
+  return createPortal(
+    <div style={{ position: "fixed", inset: 0, zIndex: 10000, background: "rgba(44,41,38,0.5)", display: "flex", justifyContent: "center", paddingTop: 30 }}
       onClick={onClose}>
       <div onClick={function(e) { e.stopPropagation(); }}
         style={{ background: PALETTE.bone, borderRadius: 16, border: "1px solid " + PALETTE.faint, width: "100%", maxWidth: 620, height: "fit-content", overflow: "hidden", boxShadow: "0 24px 80px rgba(0,0,0,0.15)" }}>
@@ -1242,7 +1243,8 @@ function TaskModal({ task, owners, addOwner, tasks, onSave, onClose, onDelete, r
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
@@ -2214,6 +2216,13 @@ export default function App() {
           </div>
           {/* Filter chips — multi-select */}
           <div style={{ display: "flex", gap: 4, flexWrap: "wrap", alignItems: "center" }}>
+            {/* Area / Familia */}
+            <span style={{ fontSize: 9, color: PALETTE.muted, fontWeight: 600, textTransform: "uppercase", letterSpacing: ".5px", marginRight: 2 }}>Area</span>
+            {FAMILY_LIST.map(function(f) {
+              var active = fFamily.includes(f.code);
+              return <button key={f.code} onClick={function() { toggleFilter(setFFamily, "fFamily", f.code); }} style={{ fontSize: 10, padding: "3px 8px", borderRadius: 4, border: "1px solid " + (active ? f.color + "60" : PALETTE.faint), background: active ? f.color + "15" : "transparent", color: active ? f.color : PALETTE.muted, cursor: "pointer", fontWeight: active ? 600 : 400 }}>{f.code}</button>;
+            })}
+            <span style={{ width: 1, height: 18, background: PALETTE.faint + "40", margin: "0 4px" }} />
             {/* Alcance */}
             <span style={{ fontSize: 9, color: PALETTE.muted, fontWeight: 600, textTransform: "uppercase", letterSpacing: ".5px", marginRight: 2 }}>Alcance</span>
             {["global", "E1", "E2"].map(function(v) {

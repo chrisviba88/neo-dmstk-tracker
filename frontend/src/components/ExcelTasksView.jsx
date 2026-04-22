@@ -300,7 +300,8 @@ export default function ExcelTasksView({
     { key: 'actions', label: '', width: '50px', sortable: false },
   ];
 
-  // Filtrar y ordenar tareas con jerarquia: Area → Iniciativa → Tareas derivadas
+  // Filtrar y ordenar tareas con jerarquia recursiva: Area > Epic raiz > hijos (epic o task) > nietos > ...
+  // Soporta epics anidados (un epic cuyo parent es otro epic, ej: fase > grupo del Gantt Retail)
   const filteredAndSortedTasks = useMemo(() => {
     let filtered = tasks;
 
@@ -316,31 +317,47 @@ export default function ExcelTasksView({
       });
     }
 
-    // Agrupar por area con jerarquia: Iniciativa primero, derivadas despues
     const familyOrder = ['DIR','LEG','MET','CON','DAR','KIT','RET','BRA','RED','EQU','TEC','PIL','ESP1','OPS1','ESP2'];
-    const grouped = [];
+    const ordered = [];
+    const sortTasks = (arr) => arr.slice().sort((a, b) => {
+      const aVal = a[sortKey] || '';
+      const bVal = b[sortKey] || '';
+      return aVal < bVal ? -sortDir : aVal > bVal ? sortDir : 0;
+    });
+
+    const visit = (node, depth, childrenByParent) => {
+      ordered.push({ ...node, _depth: depth });
+      const children = childrenByParent.get(node.id) || [];
+      // Epics (subcategorias) primero, luego tasks
+      const epicsFirst = sortTasks(children.filter(c => c.level === 'epic'));
+      const tasksAfter = sortTasks(children.filter(c => c.level !== 'epic'));
+      epicsFirst.forEach(c => visit(c, depth + 1, childrenByParent));
+      tasksAfter.forEach(c => visit(c, depth + 1, childrenByParent));
+    };
 
     familyOrder.forEach(famCode => {
       const famTasks = filtered.filter(t => t.family === famCode);
       if (famTasks.length === 0) return;
 
-      // Iniciativa primero
-      const epic = famTasks.find(t => t.level === 'epic');
-      const derived = famTasks.filter(t => t.level !== 'epic').sort((a, b) => {
-        const aVal = a[sortKey] || '';
-        const bVal = b[sortKey] || '';
-        return aVal < bVal ? -sortDir : aVal > bVal ? sortDir : 0;
+      const ids = new Set(famTasks.map(t => t.id));
+      const childrenByParent = new Map();
+      famTasks.forEach(t => {
+        const pKey = t.parent && ids.has(t.parent) ? t.parent : null;
+        if (!childrenByParent.has(pKey)) childrenByParent.set(pKey, []);
+        childrenByParent.get(pKey).push(t);
       });
 
-      if (epic) grouped.push(epic);
-      grouped.push(...derived);
+      const roots = childrenByParent.get(null) || [];
+      const rootsSorted = sortTasks(roots.filter(r => r.level === 'epic'))
+        .concat(sortTasks(roots.filter(r => r.level !== 'epic')));
+      rootsSorted.forEach(r => visit(r, 0, childrenByParent));
     });
 
     // Tareas sin familia al final
     const noFamily = filtered.filter(t => !t.family);
-    grouped.push(...noFamily);
+    noFamily.forEach(t => ordered.push({ ...t, _depth: 0 }));
 
-    return grouped;
+    return ordered;
   }, [tasks, sortKey, sortDir, projectFilter]);
 
   // Toggle sort
@@ -374,24 +391,28 @@ export default function ExcelTasksView({
         const isEpic = task.level === 'epic';
         const isDerived = task.level === 'task' && task.parent;
         const parentTask = isDerived ? tasks.find(t => t.id === task.parent) : null;
+        const depth = task._depth || 0;
+        const indentPx = 10 + depth * 18;
+        const epicBg = depth === 0 ? PALETTE.warm : PALETTE.bone;
         return (
           <td
             style={{
               ...cellStyle,
               cursor: 'pointer',
               fontWeight: isEpic ? '600' : '400',
-              paddingLeft: isDerived ? '28px' : '10px',
-              background: isEpic ? (PALETTE.warm) : PALETTE.bone,
+              paddingLeft: indentPx + 'px',
+              background: isEpic ? epicBg : PALETTE.bone,
             }}
             onClick={() => onTaskClick?.(task)}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              {isEpic && <span style={{ color: PALETTE.mostaza, fontSize: 12 }}>★</span>}
+              {isEpic && depth === 0 && <span style={{ color: PALETTE.mostaza, fontSize: 12 }}>★</span>}
+              {isEpic && depth > 0 && <span style={{ color: PALETTE.lagune, fontSize: 11 }}>▸</span>}
               {isDerived && <span style={{ color: PALETTE.muted, fontSize: 10 }}>↳</span>}
               {task.isMilestone && !isEpic && <span style={{ color: PALETTE.mostaza, fontSize: 10 }}>◆</span>}
-              <span style={{ fontFamily: isEpic ? SERIF : 'inherit' }}>{task.name}</span>
+              <span style={{ fontFamily: isEpic && depth === 0 ? SERIF : 'inherit' }}>{task.name}</span>
             </div>
-            {isDerived && parentTask && (
+            {isDerived && parentTask && parentTask.level === 'epic' && parentTask.parent == null && (
               <div style={{ fontSize: 9, color: PALETTE.muted, paddingLeft: 20, marginTop: 1 }}>Iniciativa: {parentTask.name}</div>
             )}
           </td>

@@ -194,7 +194,9 @@ function SummaryTimelineInner({ tasks, PALETTE, SERIF, onUpdateTask, onDeleteTas
   function groupByWorkstream(tasksList) {
     const categories = {};
 
-    // Agrupar por Area (family) con jerarquia: Iniciativa → Tareas derivadas
+    // Agrupar por Area (family) con jerarquia recursiva.
+    // - Caso simple (1 epic raiz): Iniciativa + Tareas (comportamiento original).
+    // - Caso profundo (varios epics raiz, ej. fases Retail): cada epic raiz es una subcategoria con sus descendientes.
     AREA_ORDER.forEach(code => {
       const cfg = AREA_CONFIG[code];
       if (!cfg) return;
@@ -202,10 +204,11 @@ function SummaryTimelineInner({ tasks, PALETTE, SERIF, onUpdateTask, onDeleteTas
       const areaTasks = tasksList.filter(t => t.family === code);
       if (areaTasks.length === 0) return;
 
-      const epic = areaTasks.find(t => t.level === 'epic');
-      const derived = areaTasks.filter(t => t.level !== 'epic');
+      const ids = new Set(areaTasks.map(t => t.id));
+      const epics = areaTasks.filter(t => t.level === 'epic');
+      const nonEpics = areaTasks.filter(t => t.level !== 'epic');
+      const rootEpics = epics.filter(e => !e.parent || !ids.has(e.parent));
 
-      // La categoria es el area, la subcategoria es "Iniciativa" + "Tareas"
       categories[code] = {
         name: cfg.label,
         color: cfg.color,
@@ -213,20 +216,52 @@ function SummaryTimelineInner({ tasks, PALETTE, SERIF, onUpdateTask, onDeleteTas
         subcategories: {}
       };
 
-      // Iniciativa como primera subcategoria
-      if (epic) {
-        categories[code].subcategories['__iniciativa__'] = {
-          name: '★ ' + epic.name,
-          tasks: [epic]
+      const descendantsOf = (epicId) => {
+        const out = [];
+        const visit = (id) => {
+          areaTasks.forEach(t => {
+            if (t.parent === id) {
+              if (t.level !== 'epic') out.push(t);
+              visit(t.id);
+            }
+          });
         };
-      }
+        visit(epicId);
+        return out;
+      };
 
-      // Tareas derivadas como segunda subcategoria
-      if (derived.length > 0) {
-        categories[code].subcategories['__tareas__'] = {
-          name: derived.length + ' tareas',
-          tasks: derived
-        };
+      if (rootEpics.length <= 1 && epics.length <= 1) {
+        // Caso simple (compat): como antes
+        const epic = rootEpics[0] || epics[0];
+        if (epic) {
+          categories[code].subcategories['__iniciativa__'] = {
+            name: '★ ' + epic.name,
+            tasks: [epic]
+          };
+        }
+        if (nonEpics.length > 0) {
+          categories[code].subcategories['__tareas__'] = {
+            name: nonEpics.length + ' tareas',
+            tasks: nonEpics
+          };
+        }
+      } else {
+        // Jerarquia profunda: un subcategoria por epic raiz, con todos sus descendientes (tasks)
+        rootEpics.forEach(re => {
+          const desc = descendantsOf(re.id);
+          categories[code].subcategories[re.id] = {
+            name: re.name,
+            tasks: [re, ...desc]
+          };
+        });
+        // Tareas huerfanas sin fase asignable
+        const orphans = nonEpics.filter(t => !ids.has(t.parent));
+        if (orphans.length > 0) {
+          categories[code].subcategories['__otros__'] = {
+            name: 'Otras tareas',
+            tasks: orphans
+          };
+        }
       }
     });
 
@@ -1237,7 +1272,7 @@ function SummaryTimelineInner({ tasks, PALETTE, SERIF, onUpdateTask, onDeleteTas
                 </div>
 
                 {/* Tareas individuales directamente (sin nivel de subcategoría duplicada) */}
-                {isExpanded && subData.tasks.slice(0, 15).map(task => {
+                {isExpanded && subData.tasks.map(task => {
                   const taskPos = getPos(toDate(task.startDate), toDate(task.endDate));
                   const isDone = task.status === 'Hecho';
                   const isOverdue = task.status !== 'Hecho' && task.endDate && toDate(task.endDate) < TODAY;
@@ -1315,19 +1350,6 @@ function SummaryTimelineInner({ tasks, PALETTE, SERIF, onUpdateTask, onDeleteTas
                   );
                 })}
 
-                {isExpanded && subData.tasks.length > 15 && (
-                  <div style={{
-                    padding: '8px 0',
-                    paddingLeft: 68,
-                    fontSize: 11,
-                    color: PALETTE.muted,
-                    fontStyle: 'italic',
-                    background: PALETTE.bone,
-                    borderBottom: `0.5px solid ${PALETTE.faint}20`
-                  }}>
-                    ... y {subData.tasks.length - 15} tareas más
-                  </div>
-                )}
               </div>
               );
             }
@@ -1530,7 +1552,7 @@ function SummaryTimelineInner({ tasks, PALETTE, SERIF, onUpdateTask, onDeleteTas
                       </div>
 
                       {/* Tareas individuales */}
-                      {isSubExpanded && subData.tasks.slice(0, 15).map(task => {
+                      {isSubExpanded && subData.tasks.map(task => {
                         const taskPos = getPos(toDate(task.startDate), toDate(task.endDate));
                         const isDone = task.status === 'Hecho';
                         const isOverdue = task.status !== 'Hecho' && task.endDate && toDate(task.endDate) < TODAY;
@@ -1608,19 +1630,6 @@ function SummaryTimelineInner({ tasks, PALETTE, SERIF, onUpdateTask, onDeleteTas
                         );
                       })}
 
-                      {isSubExpanded && subData.tasks.length > 15 && (
-                        <div style={{
-                          padding: '8px 0',
-                          paddingLeft: 108,
-                          fontSize: 11,
-                          color: PALETTE.muted,
-                          fontStyle: 'italic',
-                          background: PALETTE.bone,
-                          borderBottom: `0.5px solid ${PALETTE.faint}20`
-                        }}>
-                          ... y {subData.tasks.length - 15} tareas más
-                        </div>
-                      )}
                     </div>
                   );
                 })}
