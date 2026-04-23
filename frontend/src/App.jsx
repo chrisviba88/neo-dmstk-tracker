@@ -2124,6 +2124,31 @@ export default function App() {
           })}
         </nav>
 
+        {/* Focus shortcuts — filtrado rápido por área */}
+        <div style={{ display: "flex", gap: 2, alignItems: "center" }}>
+          <span style={{ fontSize: 9, color: PALETTE.faint, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.8px", marginRight: 2 }}>Focus</span>
+          {[["RET", "Retail", "#D7897F"], ["PIL", "Piloto", "#ef4444"]].map(function(item) {
+            var code = item[0], label = item[1], color = item[2];
+            var active = fFamily.length === 1 && fFamily[0] === code;
+            var pending = activeTasks.filter(function(t) { return t.family === code && t.status === "Pendiente"; }).length;
+            return (
+              <button key={code}
+                onClick={function() {
+                  if (active) {
+                    setFFamily([]); saveUI({ fFamily: [] });
+                  } else {
+                    setFFamily([code]); setView("tasks"); saveUI({ fFamily: [code], view: "tasks" });
+                  }
+                }}
+                style={{ display: "flex", alignItems: "center", gap: 4, padding: "5px 11px", borderRadius: 6, fontSize: 11, fontWeight: active ? 600 : 400, background: active ? color + "18" : "transparent", border: "1px solid " + (active ? color + "50" : PALETTE.faint), color: active ? color : PALETTE.muted, cursor: "pointer", transition: "all .15s" }}>
+                {label}
+                {pending > 0 && <span style={{ fontSize: 8, padding: "1px 4px", borderRadius: 3, background: active ? color + "25" : PALETTE.warm, color: active ? color : PALETTE.muted, fontWeight: 700 }}>{pending}</span>}
+                {active && <span style={{ fontSize: 10, lineHeight: 1, color: color, opacity: 0.7 }}>×</span>}
+              </button>
+            );
+          })}
+        </div>
+
 
         <div style={{ display: "flex", gap: 6 }}>
           {/* Notificaciones de notas */}
