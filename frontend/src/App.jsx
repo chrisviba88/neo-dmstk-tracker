@@ -1208,14 +1208,24 @@ function TaskModal({ task, owners, addOwner, tasks, onSave, onClose, onDelete, r
                 </FieldLabel>
               </div>
 
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
-                <FieldLabel label="Inicio">
-                  <input type="date" value={form.startDate} onChange={function(e) { set("startDate", e.target.value); }} style={{ ...inputStyle, fontSize: 13 }} />
-                </FieldLabel>
-                <FieldLabel label="Fin">
-                  <input type="date" value={form.endDate} onChange={function(e) { set("endDate", e.target.value); }} style={{ ...inputStyle, fontSize: 13 }} />
-                </FieldLabel>
-              </div>
+              {form.isMilestone ? (
+                <div style={{ display: "flex", justifyContent: "center" }}>
+                  <FieldLabel label="◆ Fecha del hito" style={{ textAlign: "center" }}>
+                    <input type="date" value={form.startDate}
+                      onChange={function(e) { set("startDate", e.target.value); set("endDate", e.target.value); }}
+                      style={{ ...inputStyle, fontSize: 14, textAlign: "center", fontFamily: SERIF, color: PALETTE.mostaza, fontWeight: 600, border: "1.5px solid " + PALETTE.mostaza + "60", background: "#E2B93B08", letterSpacing: "0.3px" }} />
+                  </FieldLabel>
+                </div>
+              ) : (
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+                  <FieldLabel label="Inicio">
+                    <input type="date" value={form.startDate} onChange={function(e) { set("startDate", e.target.value); }} style={{ ...inputStyle, fontSize: 13 }} />
+                  </FieldLabel>
+                  <FieldLabel label="Fin">
+                    <input type="date" value={form.endDate} onChange={function(e) { set("endDate", e.target.value); }} style={{ ...inputStyle, fontSize: 13 }} />
+                  </FieldLabel>
+                </div>
+              )}
 
               <FieldLabel label="Notas">
                 <textarea value={form.notes} onChange={function(e) { set("notes", e.target.value); }} rows={2}

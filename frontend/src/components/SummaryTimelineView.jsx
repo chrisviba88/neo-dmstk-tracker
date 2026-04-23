@@ -1308,7 +1308,7 @@ function SummaryTimelineInner({ tasks, PALETTE, SERIF, onUpdateTask, onDeleteTas
                         alignItems: 'center',
                         gap: 8
                       }}>
-                        {task.isMilestone && '◆ '}
+                        {task.isMilestone && <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 16, height: 16, borderRadius: 3, background: '#E2B93B18', border: '1px solid #E2B93B50', flexShrink: 0 }}><span style={{ color: '#E2B93B', fontSize: 8, fontWeight: 700 }}>◆</span></span>}
                         {task.name}
                         <span style={{ fontSize: 8, color: PALETTE.muted, fontStyle: 'italic' }}>✎</span>
                       </div>

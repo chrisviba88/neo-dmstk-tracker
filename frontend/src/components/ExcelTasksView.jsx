@@ -409,8 +409,12 @@ export default function ExcelTasksView({
               {isEpic && depth === 0 && <span style={{ color: PALETTE.mostaza, fontSize: 12 }}>★</span>}
               {isEpic && depth > 0 && <span style={{ color: PALETTE.lagune, fontSize: 11 }}>▸</span>}
               {isDerived && <span style={{ color: PALETTE.muted, fontSize: 10 }}>↳</span>}
-              {task.isMilestone && !isEpic && <span style={{ color: PALETTE.mostaza, fontSize: 10 }}>◆</span>}
-              <span style={{ fontFamily: isEpic && depth === 0 ? SERIF : 'inherit' }}>{task.name}</span>
+              {task.isMilestone && !isEpic && (
+                <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 18, height: 18, borderRadius: 3, background: '#E2B93B18', border: '1px solid #E2B93B50', flexShrink: 0 }}>
+                  <span style={{ color: '#E2B93B', fontSize: 9, fontWeight: 700 }}>◆</span>
+                </span>
+              )}
+              <span style={{ fontFamily: (isEpic && depth === 0) || task.isMilestone ? SERIF : 'inherit', fontStyle: task.isMilestone && !isEpic ? 'italic' : 'normal', color: task.isMilestone && !isEpic ? '#C9A132' : 'inherit' }}>{task.name}</span>
             </div>
             {isDerived && parentTask && parentTask.level === 'epic' && parentTask.parent == null && (
               <div style={{ fontSize: 9, color: PALETTE.muted, paddingLeft: 20, marginTop: 1 }}>Iniciativa: {parentTask.name}</div>
@@ -482,6 +486,34 @@ export default function ExcelTasksView({
 
       case 'startDate':
       case 'endDate': {
+        // Para hitos: mostrar fecha única con símbolo en startDate, vacío en endDate
+        if (task.isMilestone) {
+          if (column.key === 'endDate') {
+            return <td style={{ ...cellStyle, textAlign: 'center' }}><span style={{ color: PALETTE.faint, fontSize: 10 }}>—</span></td>;
+          }
+          // startDate de hito: caja destacada con ◆
+          const msDateStr = task.startDate ? new Date(task.startDate + 'T00:00:00').toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' }) : '-';
+          if (readOnly) return (
+            <td style={cellStyle}>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 12, color: '#C9A132', fontFamily: SERIF, fontWeight: 600 }}>
+                <span style={{ fontSize: 9 }}>◆</span>{msDateStr}
+              </span>
+            </td>
+          );
+          return (
+            <td style={cellStyle}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                <span style={{ color: '#E2B93B', fontSize: 9, flexShrink: 0 }}>◆</span>
+                <input type="date" value={task.startDate || ''}
+                  onChange={(e) => safeUpdate?.(task.id, { startDate: e.target.value, endDate: e.target.value })}
+                  onClick={(e) => e.stopPropagation()}
+                  style={{ flex: 1, padding: '5px 8px', fontSize: '12px', border: '1.5px solid #E2B93B50', borderRadius: '6px', background: '#E2B93B06', color: '#C9A132', fontFamily: SERIF, fontWeight: 600, cursor: 'pointer', outline: 'none' }}
+                />
+              </div>
+            </td>
+          );
+        }
+
         const today = new Date();
         const endDateVal = new Date(task.endDate);
         const isOverdue = column.key === 'endDate' && task.status !== 'Hecho' && endDateVal < today;
